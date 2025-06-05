@@ -1,0 +1,2 @@
+C:/Users/KimoStore/flutter_course/flutter_course_1/android/app/.cxx/Debug/gp02z5q4/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/KimoStore/flutter_course/flutter_course_1/android/app/.cxx/Debug/gp02z5q4/armeabi-v7a/CMakeFiles/rebuild_cache.dir
