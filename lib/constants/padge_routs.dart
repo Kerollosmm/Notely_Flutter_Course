@@ -1,0 +1,9 @@
+const loginRoute='/login';
+const registerRoute='/register';
+const HomePageRoute='/homepage';
+const accountAnalyzeRoute='/accountAnalyze';
+const verifyAccount = '/verifyAccount';
+const TaskDetailes = '/taskdetailes';
+const TaskViewRoute='/TaskView';
+const TaskPadgeRoute='/taskPage';
+const MyHomePageb ='/MyHomePageB';
