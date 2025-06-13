@@ -9,7 +9,7 @@ import 'dart:developer' as devtools show log;
 
 import 'package:flutter_course_2/firebase_options.dart';
 import 'package:flutter_course_2/page/home_padge.dart';
-import 'package:flutter_course_2/page/veryfy.dart';
+import 'package:flutter_course_2/regiter&logIn%20page/veryfy.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/widgets/Botton.dart';

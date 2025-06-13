@@ -43,6 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/noteView');
+            },
+            icon: const Icon(Icons.add, color: Colors.black),
+          ),
           CircleAvatar(
             backgroundColor: Colors.blue.shade50,
             child: Text(

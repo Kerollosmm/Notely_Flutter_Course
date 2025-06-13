@@ -7,3 +7,4 @@ const TaskDetailes = '/taskdetailes';
 const TaskViewRoute='/TaskView';
 const TaskPadgeRoute='/taskPage';
 const MyHomePageb ='/MyHomePageB';
+const noteView = '/noteView';
