@@ -1,13 +1,24 @@
 # Project-level configuration.
+<<<<<<< HEAD
 cmake_minimum_required(VERSION 3.13)
+=======
+cmake_minimum_required(VERSION 3.10)
+>>>>>>> e9afa8c934205240bda7f1efd3aa25e3f61e7f7d
 project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
+<<<<<<< HEAD
 set(BINARY_NAME "flutter_course_2")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 set(APPLICATION_ID "com.example.flutter_course_2")
+=======
+set(BINARY_NAME "flutter_course")
+# The unique GTK application identifier for this application. See:
+# https://wiki.gnome.org/HowDoI/ChooseApplicationID
+set(APPLICATION_ID "com.example.flutter_course")
+>>>>>>> e9afa8c934205240bda7f1efd3aa25e3f61e7f7d
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -54,8 +65,30 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
+<<<<<<< HEAD
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
+=======
+add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
+
+# Define the application target. To change its name, change BINARY_NAME above,
+# not the value here, or `flutter run` will no longer work.
+#
+# Any new source files that you add to the application should be added here.
+add_executable(${BINARY_NAME}
+  "main.cc"
+  "my_application.cc"
+  "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
+)
+
+# Apply the standard set of build settings. This can be removed for applications
+# that need different build settings.
+apply_standard_settings(${BINARY_NAME})
+
+# Add dependency libraries. Add any application-specific dependencies here.
+target_link_libraries(${BINARY_NAME} PRIVATE flutter)
+target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
+>>>>>>> e9afa8c934205240bda7f1efd3aa25e3f61e7f7d
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
