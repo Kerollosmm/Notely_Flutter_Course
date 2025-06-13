@@ -22,15 +22,44 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   bool _isLoading = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1,),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -38,37 +67,53 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return AuthScreenLayout(
       title: "Login",
-      subtitle: "Sign in to your account",
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CustomTextField(
-            controller: _email,
-            hintText: "Email Address",
-            keyboardType: TextInputType.emailAddress,
-            isPassword: false,
-            prefixIcon: const Icon(Icons.email_outlined),
+      subtitle: "Sign in to your account",      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+          SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: CustomTextField(
+                controller: _email,
+                hintText: "Email Address",
+                keyboardType: TextInputType.emailAddress,
+                isPassword: false,
+                prefixIcon: const Icon(Icons.email_outlined),
+              ),
+            ),
           ),
-          CustomTextField(
-            controller: _password,
-            hintText: 'Password',
-            isPassword: true,
-            prefixIcon: const Icon(Icons.lock_outline),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a password';
-              }
-              if (value.length < 8) {
-                return 'Password must be at least 8 characters long';
-              }
-              if (!value.contains(RegExp(r'[a-zA-Z]'))) {
-                return 'Password must contain at least one letter';
-              }
-              if (!value.contains(RegExp(r'[0-9]'))) {
-                return 'Password must contain at least one number';
-              }
-              return null; // password is valid
-            },
+          const SizedBox(height: 16),
+          SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: CustomTextField(
+                controller: _password,
+                hintText: 'Password',
+                isPassword: true,
+                prefixIcon: const Icon(Icons.lock_outline),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters long';
+                  }
+                  if (!value.contains(RegExp(r'[a-zA-Z]'))) {
+                    return 'Password must contain at least one letter';
+                  }
+                  if (!value.contains(RegExp(r'[0-9]'))) {
+                    return 'Password must contain at least one number';
+                  }
+                  return null; // password is valid
+                },
+              ),
+            ),
           ),
           Align(
             alignment: Alignment.centerRight,
@@ -232,6 +277,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
+    )
+      )
     );
   }
   

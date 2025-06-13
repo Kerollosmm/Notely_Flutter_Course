@@ -95,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context, snapshot) {
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
+                    case ConnectionState.active:
                       return Center(child: Text("WATING FOR ALL NOTES ......"));
                     default:
                       return Center(child: CircularProgressIndicator());
