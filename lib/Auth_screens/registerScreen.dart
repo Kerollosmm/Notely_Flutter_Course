@@ -1,30 +1,33 @@
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_course_2/Auth_screens/veryfy.dart';
+
+import 'dart:developer' as devtools show log;
+
+import 'package:flutter_course_2/firebase_options.dart';
 import 'package:flutter_course_2/page/home_padge.dart';
-import 'package:flutter_course_2/regiter&logIn%20page/veryfy.dart';
-import 'package:flutter_course_2/regiter&logIn page/registerScreen.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/widgets/Botton.dart';
 import 'package:flutter_course_2/widgets/ErrorDialog.dart';
 import 'package:flutter_course_2/widgets/customFeild.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
-import 'package:flutter_course_2/widgets/snakbar.dart';
 
-import 'dart:developer' as devtools show log;
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+class _RegisterScreenState extends State<RegisterScreen>
+    with SingleTickerProviderStateMixin {
+  late final TextEditingController _email;
+  late final TextEditingController _password;
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -33,9 +36,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
+    _email = TextEditingController();
+    _password = TextEditingController();
+
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1,),
+      duration: const Duration(seconds: 1),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -66,18 +72,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return AuthScreenLayout(
-      title: "Login",
-      subtitle: "Sign in to your account",      child: FadeTransition(
+      title: "Create Account",
+      subtitle: "Sign up to get started",      child: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-          SlideTransition(
-            position: _slideAnimation,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
               child: CustomTextField(
                 controller: _email,
                 hintText: "Email Address",
@@ -87,11 +93,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          SlideTransition(
-            position: _slideAnimation,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
               child: CustomTextField(
                 controller: _password,
                 hintText: 'Password',
@@ -115,131 +120,84 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                // Forgot password logic
-              },
-              child: const Text(
-                "Forgot Password?",
-                style: TextStyle(
-                  color: Color(0xFF4E8D7C),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Bottom(
-            title: "Login",
+            title: "Register",
             isLoading: _isLoading,
             ontap: () async {
               setState(() {
                 _isLoading = true;
               });
-              
-              devtools.log("Bottom clicked");
+
               final email = _email.text;
               final password = _password.text;
-              
-              if (email.isEmpty || password.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  ErrorSnackBar(
-                    message: "Please fill all fields to continue"
-                  ),
+
+              try {
+                await AuthSeries.firebase().createUser(
+                  email: email,
+                  password: password,
                 );
-                setState(() {
-                  _isLoading = false;
-                });
-              } else {
-                try {
-                  await AuthSeries.firebase().logIn(
-                    email: email,
-                    password: password
-                  );
 
-                  final user = AuthSeries.firebase().currentUser;
-                  final userEmail = _email.text;
+                User? user = FirebaseAuth.instance.currentUser;
 
-                  if (user?.isEmailVerified ?? false) {
-                    if (mounted) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
-                      );
-                    }
-                  } else {
-                    if (mounted) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return EmailVerificationDialog(
-                            Email: userEmail,
-                          );
-                        },
-                      );
-                    }
-                  }
-                } on UserNotFoundAuthExceptions {
-                  showErrorDialog(
-                    context,
-                    "User Not Found",
-                    "May be the password or Email are Wrong"
+                if (user != null) {
+                  await AuthSeries.firebase().sendEmailVerification();
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return EmailVerificationDialog(Email: _email.text);
+                    },
                   );
-                  devtools.log('no user found');
-                } on WrongPasswordAuthException {
-                  showErrorDialog(
-                    context,
-                    "username and password",
-                    "Please check your password and Email"
-                  );
-                  devtools.log('Wrong passWord');
-                } on GenericAuthExceptions {
-                  showErrorDialog(
-                    context,
-                    "Authentication error",
-                    "An unexpected error occurred during authentication"
-                  );
-                  devtools.log('error:');
-                } finally {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                  }
+                }
+              } on WeakPasswordAuthExceptions {
+                showErrorDialog(
+                  context,
+                  "Password",
+                  "The password provided is too weak.",
+                );
+              } on EmailAlreadyInUseAuthExceptions {
+                showErrorDialog(
+                  context,
+                  "Email",
+                  "The email address is already in use.",
+                );
+              } on InvalidEmailAuthExceptions {
+                showErrorDialog(context, "Email", "Invalid Email.");
+              } on GenericAuthExceptions {
+                showErrorDialog(
+                  context,
+                  "Error",
+                  "An error occurred while registering. Please try again.",
+                );
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
                 }
               }
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                "Don't have an account?",
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
+                "Already have an account?",
+                style: TextStyle(color: Colors.white70),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RegisterScreen(),
-                    ),
-                  );
+                  Navigator.of(context).pop();
                 },
                 child: const Text(
-                  "Register Now",
+                  "Login Now",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF4E8D7C),
                   ),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -248,10 +206,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               Expanded(child: Divider(color: Colors.white38)),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "OR",
-                  style: TextStyle(color: Colors.white38),
-                ),
+                child: Text("OR", style: TextStyle(color: Colors.white38)),
               ),
               Expanded(child: Divider(color: Colors.white38)),
             ],
@@ -263,7 +218,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               _socialButton(
                 icon: 'assets/icons/google.png',
                 onTap: () {
-                  // Add Google auth logic
+                  showErrorDialog(
+                    context,
+                    "Wait",
+                    "This Fueter not availbel yet",
+                  );
                 },
               ),
               const SizedBox(width: 24),
@@ -271,6 +230,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 icon: 'assets/icons/facebook.png',
                 onTap: () {
                   // Add Facebook auth logic
+                  showErrorDialog(
+                    context,
+                    "Wait",
+                    "This Fueter not availbel yet",
+                  );
                 },
               ),
             ],
@@ -281,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       )
     );
   }
-  
+
   Widget _socialButton({required String icon, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,

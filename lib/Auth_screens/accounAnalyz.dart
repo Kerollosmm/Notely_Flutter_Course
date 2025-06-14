@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
+import 'package:flutter_course_2/Auth_screens/veryfy.dart';
 import 'package:flutter_course_2/page/home_padge.dart';
-import 'package:flutter_course_2/regiter&logIn%20page/veryfy.dart';
 
-import 'package:flutter_course_2/regiter&logIn page/loginpadge.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 
 class AccountAnalyze extends StatefulWidget {

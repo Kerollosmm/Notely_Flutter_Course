@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_course_2/regiter&logIn%20page/loginpadge.dart';
+import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 
@@ -23,12 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _noteServices = NoteServices();
     _noteServices.open();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _noteServices.close();
-    super.dispose();
   }
 
   @override
@@ -96,7 +90,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
                     case ConnectionState.active:
-                      return Center(child: Text("WATING FOR ALL NOTES ......"));
+                      if (snapshot.hasData) {
+                        final allNotes = snapshot.data as List<DatabaseNote>;
+                        return ListView.builder(
+                          itemCount: allNotes.length,
+                          itemBuilder: (context, index) {
+                            final note = allNotes[index];
+
+                            return ListTile(
+                              title: Text(
+                                note.text,
+                                maxLines: 1,
+                                softWrap: true ,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return Center(child: CircularProgressIndicator());
+                      }
                     default:
                       return Center(child: CircularProgressIndicator());
                   }

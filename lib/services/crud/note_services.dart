@@ -16,13 +16,26 @@ class NoteServices {
   // A cache of notes to provide quick access and reduce database queries.
   List<DatabaseNote> _notes = [];
 
-  
   static final NoteServices _shared = NoteServices._sharedInstance();
-  NoteServices._sharedInstance();
-  factory NoteServices()=> _shared;
+  NoteServices._sharedInstance() {
+    _noteStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: (){
+        _noteStreamController.sink.add(_notes);
+        
+      }
+    );
+  }
+  factory NoteServices() => _shared;
   // A stream controller to broadcast changes to the list of notes.
   // UI components can listen to this stream to reactively update.
-  final _noteStreamControlle = StreamController<List<DatabaseNote>>.broadcast();
+  
+
+
+    Stream<List<DatabaseNote>> get allNote => _noteStreamController.stream;
+
+
+ late final StreamController<List<DatabaseNote>> _noteStreamController;
+
 
   Future<DatabaseUser> getOrCreateUser({required String email}) async {
     try {
@@ -40,10 +53,9 @@ class NoteServices {
   Future<void> _cacheNote() async {
     final allNote = await getAllNotes();
     _notes = allNote.toList();
-    _noteStreamControlle.add(_notes);
+    _noteStreamController.add(_notes);
   }
 
-Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
   // Updates an existing note in the database.
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
@@ -62,7 +74,7 @@ Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
     } else {
       final updatedNote = await getNote(id: note.id);
       _notes.removeWhere((note) => note.id == updatedNote.id);
-      _noteStreamControlle.add(_notes);
+      _noteStreamController.add(_notes);
       return updatedNote;
     }
   }
@@ -91,7 +103,7 @@ Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
     } else {
       final note = DatabaseNote.fromRow(notes.first);
       _notes.removeWhere((note) => note.id == id);
-      _noteStreamControlle.add(_notes);
+      _noteStreamController.add(_notes);
       return note;
     }
   }
@@ -103,7 +115,7 @@ Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
     final db = _getDatabaseOrThrow();
     final numberOfDeletian = await db.delete(noteTable);
     _notes = [];
-    _noteStreamControlle.add(_notes);
+    _noteStreamController.add(_notes);
     return numberOfDeletian;
   }
 
@@ -126,7 +138,7 @@ Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
       _notes.removeWhere((note) => note.id == id);
       //optianl
       if (_notes.length != countbefore) {
-        _noteStreamControlle.add(_notes);
+        _noteStreamController.add(_notes);
       }
     }
   }
@@ -157,7 +169,7 @@ Stream<List<DatabaseNote>> get allNote => _noteStreamControlle.stream;
     );
 
     _notes.add(note);
-    _noteStreamControlle.add(_notes);
+    _noteStreamController.add(_notes);
     return note;
   }
 
