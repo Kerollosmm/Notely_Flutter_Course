@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
-import 'package:path/path.dart';
 
 class NoteView extends StatefulWidget {
   const NoteView({super.key});
@@ -12,17 +11,22 @@ class NoteView extends StatefulWidget {
 
 class _NoteViewState extends State<NoteView> {
   DatabaseNote? _note;
-
   late final NoteServices _noteServices;
-
   late final TextEditingController _textController;
 
   @override
   void initState() {
+    super.initState();
     _noteServices = NoteServices();
     _textController = TextEditingController();
-    _noteServices.open();
-    super.initState();
+
+    /// **CRITICAL FIX FOR BUG #1**
+    /// The original code called `_noteServices.open()` here.
+    /// Since the database is already opened by the home screen, this second call
+    /// would throw a `DatabaseAlreadyOpenException`, effectively crashing this
+    /// widget's initialization. This prevented new notes from ever being created,
+    /// meaning the note list on the home screen would never be updated.
+    /// Removing this line fixes the crash and allows the UI to update instantly.
   }
 
   void _textControllerListener() async {
@@ -41,14 +45,12 @@ class _NoteViewState extends State<NoteView> {
 
   Future<DatabaseNote> createNewNote() async {
     final existingNote = _note;
-
     if (existingNote != null) {
       return existingNote;
     }
     final currentUser = AuthSeries.firebase().currentUser!;
     final email = currentUser.email!;
     final owner = await _noteServices.getUser(email: email);
-
     return await _noteServices.createNote(owner: owner);
   }
 

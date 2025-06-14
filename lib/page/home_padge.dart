@@ -13,16 +13,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
-
   late final NoteServices _noteServices;
   String get userEmail => AuthSeries.firebase().currentUser!.email!;
-  // Dummy data for notes - in a real app, this would come from a databas
-
+  late Future<DatabaseUser> _userFuture;
+  
   @override
   void initState() {
+    super.initState();
     _noteServices = NoteServices();
     _noteServices.open();
-    super.initState();
+    _userFuture = _noteServices.getOrCreateUser(email: userEmail);
   }
 
   @override
@@ -38,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/noteView');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/noteView');
             },
             icon: const Icon(Icons.add, color: Colors.black),
           ),
@@ -79,47 +79,39 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: FutureBuilder(
-        future: _noteServices.getOrCreateUser(email: userEmail),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return StreamBuilder(
-                stream: _noteServices.allNote,
-                builder: (context, snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting:
-                    case ConnectionState.active:
-                      if (snapshot.hasData) {
-                        final allNotes = snapshot.data as List<DatabaseNote>;
-                        return ListView.builder(
-                          itemCount: allNotes.length,
-                          itemBuilder: (context, index) {
-                            final note = allNotes[index];
-
-                            return ListTile(
-                              title: Text(
-                                note.text,
-                                maxLines: 1,
-                                softWrap: true ,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          },
-                        );
-                      } else {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                    default:
-                      return Center(child: CircularProgressIndicator());
-                  }
-                },
-              );
-            default:
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.grey),
-              );
+      body: FutureBuilder<DatabaseUser>(
+        future: _userFuture,
+        builder: (context, userSnapshot) {
+          if (userSnapshot.connectionState == ConnectionState.done) {
+            return StreamBuilder<List<DatabaseNote>>(
+              stream: _noteServices.allNote,
+              builder: (context, noteSnapshot) {
+                if (noteSnapshot.hasData) {
+                  final allNotes = noteSnapshot.data!;
+                  return ListView.builder(
+                    itemCount: allNotes.length,
+                    itemBuilder: (context, index) {
+                      final note = allNotes[index];
+                      return ListTile(
+                        title: Text(
+                          note.text,
+                          maxLines: 1,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    },
+                  );
+                } else if (noteSnapshot.hasError) {
+                  return Center(child: Text('Error: ${noteSnapshot.error}'));
+                }
+                return const Center(child: CircularProgressIndicator());
+              },
+            );
           }
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.grey),
+          );
         },
       ),
     );
