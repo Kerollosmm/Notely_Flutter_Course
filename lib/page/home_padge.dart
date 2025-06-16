@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
+import 'package:flutter_course_2/constants/padge_routs.dart';
+import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final NoteServices _noteServices;
   String get userEmail => AuthSeries.firebase().currentUser!.email!;
   late Future<DatabaseUser> _userFuture;
-  
+
   @override
   void initState() {
     super.initState();
@@ -53,14 +56,13 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == 'logout') {
-                await FirebaseAuth.instance.signOut();
-                if (mounted) {
-                  Navigator.pushReplacement(
+                final shouldLogOut = await showLogOutDialog(context);
+
+                if (shouldLogOut) {
+                  await AuthSeries.firebase().logOut();
+                  Navigator.of(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
+                  ).pushNamedAndRemoveUntil(loginRoute, (_) => false);
                 }
               }
             },
@@ -88,18 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, noteSnapshot) {
                 if (noteSnapshot.hasData) {
                   final allNotes = noteSnapshot.data!;
-                  return ListView.builder(
-                    itemCount: allNotes.length,
-                    itemBuilder: (context, index) {
-                      final note = allNotes[index];
-                      return ListTile(
-                        title: Text(
-                          note.text,
-                          maxLines: 1,
-                          softWrap: true,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
+                  return NoteListView(
+                    notes: allNotes,
+                    onDelete: (note) async {
+                      await _noteServices.deleteNote(id: note.id);
                     },
                   );
                 } else if (noteSnapshot.hasError) {

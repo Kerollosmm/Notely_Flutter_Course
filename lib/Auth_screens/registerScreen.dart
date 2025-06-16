@@ -12,8 +12,8 @@ import 'package:flutter_course_2/firebase_options.dart';
 import 'package:flutter_course_2/page/home_padge.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
+import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/widgets/Botton.dart';
-import 'package:flutter_course_2/widgets/ErrorDialog.dart';
 import 'package:flutter_course_2/widgets/customFeild.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
 
@@ -152,21 +152,18 @@ class _RegisterScreenState extends State<RegisterScreen>
               } on WeakPasswordAuthExceptions {
                 showErrorDialog(
                   context,
-                  "Password",
                   "The password provided is too weak.",
                 );
               } on EmailAlreadyInUseAuthExceptions {
                 showErrorDialog(
                   context,
-                  "Email",
                   "The email address is already in use.",
                 );
               } on InvalidEmailAuthExceptions {
-                showErrorDialog(context, "Email", "Invalid Email.");
+                showErrorDialog(context, "Invalid Email.");
               } on GenericAuthExceptions {
                 showErrorDialog(
                   context,
-                  "Error",
                   "An error occurred while registering. Please try again.",
                 );
               } finally {
@@ -221,7 +218,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                   showErrorDialog(
                     context,
                     "Wait",
-                    "This Fueter not availbel yet",
                   );
                 },
               ),
@@ -233,7 +229,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                   showErrorDialog(
                     context,
                     "Wait",
-                    "This Fueter not availbel yet",
                   );
                 },
               ),

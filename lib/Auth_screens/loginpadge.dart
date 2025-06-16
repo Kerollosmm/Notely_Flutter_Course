@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../constants/ios_theme.dart';
 
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
@@ -6,8 +8,8 @@ import 'package:flutter_course_2/page/home_padge.dart';
 
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
+import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/widgets/Botton.dart';
-import 'package:flutter_course_2/widgets/ErrorDialog.dart';
 import 'package:flutter_course_2/widgets/customFeild.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
 import 'package:flutter_course_2/widgets/snakbar.dart';
@@ -177,21 +179,19 @@ class _LoginScreenState extends State<LoginScreen>
                     } on UserNotFoundAuthExceptions {
                       showErrorDialog(
                         context,
-                        "User Not Found",
                         "May be the password or Email are Wrong",
                       );
                       devtools.log('no user found');
                     } on WrongPasswordAuthException {
                       showErrorDialog(
                         context,
-                        "username and password",
+                       
                         "Please check your password and Email",
                       );
                       devtools.log('Wrong passWord');
                     } on GenericAuthExceptions {
                       showErrorDialog(
                         context,
-                        "Authentication error",
                         "An unexpected error occurred during authentication",
                       );
                       devtools.log('error:');

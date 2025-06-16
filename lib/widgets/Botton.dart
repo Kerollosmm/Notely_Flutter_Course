@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../constants/ios_theme.dart';
 
 class Bottom extends StatelessWidget {
   final String title;
@@ -19,37 +21,37 @@ class Bottom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isLoading ? null : ontap,
-      child: Container(
-        height: 50,
+      onTap: isLoading
+          ? null
+          : () {
+              // Add haptic feedback for iOS feel
+              HapticFeedback.mediumImpact();
+              ontap();
+            },
+      child: AnimatedContainer(
+        duration: IOSTheme.shortAnimation,
+        height: IOSTheme.buttonHeight,
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: backgroundColor ?? const Color(0xFF4E8D7C),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: (backgroundColor ?? const Color(0xFF4E8D7C)).withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+        decoration: IOSTheme.buttonDecoration.copyWith(
+          color: isLoading
+              ? (backgroundColor ?? IOSTheme.primary).withOpacity(0.7)
+              : backgroundColor ?? IOSTheme.primary,
         ),
         child: Center(
           child: isLoading
               ? const SizedBox(
-                  height: 24,
-                  width: 24,
+                  height: 20,
+                  width: 20,
                   child: CircularProgressIndicator(
                     color: Colors.white,
-                    strokeWidth: 2.5,
+                    strokeWidth: 2.0,
                   ),
                 )
               : Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  style: IOSTheme.body.copyWith(
                     color: textColor ?? Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
         ),
