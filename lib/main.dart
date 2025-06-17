@@ -5,7 +5,7 @@ import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/page/home_padge.dart';
-import 'package:flutter_course_2/page/note_view.dart';
+import 'package:flutter_course_2/page/create_update_note_view.dart';
 
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         registerRoute: (context) => const RegisterScreen(),
         accountAnalyzeRoute: (context) => const AccountAnalyze(),
         HomePageRoute: (context) =>  HomeScreen(),   
-        noteView: (context) => const NoteView(),
+        noteView: (context) => const CreateUpdateNoteView(),
       },
       home: const AccountAnalyze(),
     );
