@@ -4,7 +4,8 @@ import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/cloud/cloud_note.dart';
+import 'package:flutter_course_2/services/cloud/firebase_cloud_storge.dart';
 import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,16 +17,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
-  late final NotesService _noteServices;
-  String get userEmail => AuthSeries.firebase().currentUser!.email!;
-  late Future<DatabaseUser> _userFuture;
+  late final FirebaseCloudStorage _noteServices;
+  String get userId => AuthSeries.firebase().currentUser!.id!;
 
   @override
   void initState() {
+    _noteServices = FirebaseCloudStorage();
     super.initState();
-    _noteServices = NotesService();
-    _noteServices.open();
-    _userFuture = _noteServices.getOrCreateUser(email: userEmail);
   }
 
   @override
@@ -81,19 +79,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<DatabaseUser>(
-        future: _userFuture,
-        builder: (context, userSnapshot) {
-          if (userSnapshot.connectionState == ConnectionState.done) {
-            return StreamBuilder<List<DatabaseNote>>(
-              stream: _noteServices.allNotes,
+      body:  StreamBuilder(
+              stream: _noteServices.allNote(ownerUserId: userId),
               builder: (context, noteSnapshot) {
                 if (noteSnapshot.hasData) {
-                  final allNotes = noteSnapshot.data!;
+                  final allNotes = noteSnapshot.data as Iterable<CloudNote>;
                   return NoteListView(
                     notes: allNotes,
                     onDelete: (note) async {
-                      await _noteServices.deleteNote(id: note.id);
+                      await _noteServices.deleteNotes(documentId: note.documentId);
                     },
                   );
                 } else if (noteSnapshot.hasError) {
@@ -101,13 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
                 return const Center(child: CircularProgressIndicator());
               },
-            );
-          }
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.grey),
-          );
-        },
-      ),
+            ),
     );
   }
 }
