@@ -129,3 +129,7 @@ This project is a starting point for a Flutter application. Here's how to get st
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 - [Flutter documentation](https://docs.flutter.dev/)
+- [Firebase documentation](https://firebase.google.com/docs/flutter/setup)
+
+## Contact With Me 
+[My Email](kerollosmelad94@gmail.com)
