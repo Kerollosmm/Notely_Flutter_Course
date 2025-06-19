@@ -16,14 +16,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final User? user = FirebaseAuth.instance.currentUser;
-  late final NoteServices _noteServices;
+  late final NotesService _noteServices;
   String get userEmail => AuthSeries.firebase().currentUser!.email!;
   late Future<DatabaseUser> _userFuture;
 
   @override
   void initState() {
     super.initState();
-    _noteServices = NoteServices();
+    _noteServices = NotesService();
     _noteServices.open();
     _userFuture = _noteServices.getOrCreateUser(email: userEmail);
   }
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, userSnapshot) {
           if (userSnapshot.connectionState == ConnectionState.done) {
             return StreamBuilder<List<DatabaseNote>>(
-              stream: _noteServices.allNote,
+              stream: _noteServices.allNotes,
               builder: (context, noteSnapshot) {
                 if (noteSnapshot.hasData) {
                   final allNotes = noteSnapshot.data!;

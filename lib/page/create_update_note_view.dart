@@ -1,32 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/cloud/cloud_note.dart';
+import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/utailates/generics/get_arguments.dart';
 
 class CreateUpdateNoteView extends StatefulWidget {
-  const CreateUpdateNoteView({super.key});
+  const CreateUpdateNoteView({Key? key}) : super(key: key);
 
   @override
-  State<CreateUpdateNoteView> createState() => _CreateUpdateNoteViewState();
+  _CreateUpdateNoteViewState createState() => _CreateUpdateNoteViewState();
 }
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
-  DatabaseNote? _note;
-  late final NoteServices _noteServices;
+  CloudNote? _note;
+  late final FirebaseCloudStorage _notesService;
   late final TextEditingController _textController;
 
   @override
   void initState() {
-    super.initState();
-    _noteServices = NoteServices();
+    _notesService = FirebaseCloudStorage();
     _textController = TextEditingController();
-
-    /// **CRITICAL FIX FOR BUG #1**
-    /// The original code called `_noteServices.open()` here.
-    /// Since the database is already opened by the home screen, this second call
-    /// would throw a `DatabaseAlreadyOpenException`, effectively crashing this
-    /// widget's initialization. This prevented new notes from ever being created,
-    /// meaning the note list on the home screen would never be updated.
-    /// Removing this line fixes the crash and allows the UI to update instantly.
+    super.initState();
   }
 
   void _textControllerListener() async {
@@ -35,44 +30,54 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       return;
     }
     final text = _textController.text;
-    await _noteServices.updateNote(note: note, Text: text);
+    await _notesService.updateNotes(documentId: note.documentId, text: text);
   }
 
-  void _setUpTextControllerListener() {
+  void _setupTextControllerListener() {
     _textController.removeListener(_textControllerListener);
     _textController.addListener(_textControllerListener);
   }
 
-  Future<DatabaseNote> createNewNote() async {
+  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
+    final widgetNote = context.getArgument<CloudNote>();
+
+    if (widgetNote != null) {
+      _note = widgetNote;
+      _textController.text = widgetNote.text;
+      return widgetNote;
+    }
+
     final existingNote = _note;
     if (existingNote != null) {
       return existingNote;
     }
     final currentUser = AuthSeries.firebase().currentUser!;
-    final email = currentUser.email!;
-    final owner = await _noteServices.getUser(email: email);
-    return await _noteServices.createNote(owner: owner);
+    final email = currentUser.email;
+    final userId = currentUser.id;
+    final newNote = await _notesService.createNewNote(ownerUserId: userId);
+    _note = newNote;
+    return newNote;
   }
 
   void _deleteNoteIfTextIsEmpty() {
     final note = _note;
     if (_textController.text.isEmpty && note != null) {
-      _noteServices.deleteNote(id: note.id);
+      _notesService.deleteNotes(documentId: note.documentId);
     }
   }
 
-  void _saveNoteIfTextIsNotEmpty() {
+  void _saveNoteIfTextNotEmpty() async {
     final note = _note;
     final text = _textController.text;
     if (note != null && text.isNotEmpty) {
-      _noteServices.updateNote(note: note, Text: text);
+      await _notesService.updateNotes(documentId: note.documentId, text: text);
     }
   }
 
   @override
   void dispose() {
     _deleteNoteIfTextIsEmpty();
-    _saveNoteIfTextIsNotEmpty();
+    _saveNoteIfTextNotEmpty();
     _textController.dispose();
     super.dispose();
   }
@@ -80,27 +85,23 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New note')),
+      appBar: AppBar(title: const Text('New Note')),
       body: FutureBuilder(
-        future: createNewNote(),
+        future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              _note = snapshot.data as DatabaseNote;
-              _setUpTextControllerListener();
+              _setupTextControllerListener();
               return TextField(
                 controller: _textController,
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
                 decoration: const InputDecoration(
-                  hintText: 'Start typing your note here...',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16.0),
+                  hintText: 'Start typing your note...',
                 ),
               );
-
             default:
-              return const Center(child: CircularProgressIndicator());
+              return const CircularProgressIndicator();
           }
         },
       ),
