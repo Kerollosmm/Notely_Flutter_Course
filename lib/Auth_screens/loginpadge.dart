@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../constants/ios_theme.dart';
 
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
-import 'package:flutter_course_2/page/home_padge.dart';
+import 'package:flutter_course_2/page/home_page.dart';
 
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
@@ -162,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen>
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => HomeScreen(),
+                              builder: (context) => HomePage(),
                             ),
                           );
                         }

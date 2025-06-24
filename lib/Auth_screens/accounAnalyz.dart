@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
-import 'package:flutter_course_2/page/home_padge.dart';
+import 'package:flutter_course_2/page/home_page.dart';
 
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 
@@ -24,7 +24,7 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
               final user = AuthSeries.firebase().currentUser;
               if (user != null) {
                 if (user.isEmailVerified) {
-                  return  HomeScreen();
+                  return  HomePage();
                 } else {
                   return Scaffold(
                     body: Center(

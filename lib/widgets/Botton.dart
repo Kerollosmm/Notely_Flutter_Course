@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../constants/ios_theme.dart';
 
 class Bottom extends StatelessWidget {
   final String title;
@@ -24,18 +23,17 @@ class Bottom extends StatelessWidget {
       onTap: isLoading
           ? null
           : () {
-              // Add haptic feedback for iOS feel
               HapticFeedback.mediumImpact();
               ontap();
             },
-      child: AnimatedContainer(
-        duration: IOSTheme.shortAnimation,
-        height: IOSTheme.buttonHeight,
+      child: Container(
+        height: 48, // Default button height
         width: double.infinity,
-        decoration: IOSTheme.buttonDecoration.copyWith(
+        decoration: BoxDecoration(
           color: isLoading
-              ? (backgroundColor ?? IOSTheme.primary).withOpacity(0.7)
-              : backgroundColor ?? IOSTheme.primary,
+              ? (backgroundColor ?? Theme.of(context).primaryColor).withOpacity(0.7)
+              : backgroundColor ?? Theme.of(context).primaryColor,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
           child: isLoading
@@ -49,9 +47,10 @@ class Bottom extends StatelessWidget {
                 )
               : Text(
                   title,
-                  style: IOSTheme.body.copyWith(
+                  style: TextStyle(
                     color: textColor ?? Colors.white,
                     fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
         ),
