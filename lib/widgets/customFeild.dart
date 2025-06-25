@@ -8,6 +8,7 @@ class CustomTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final Widget? prefixIcon;
   final VoidCallback? onTap;
+  final String? labelText; // Added labelText
 
   const CustomTextField({
     super.key,
@@ -18,6 +19,7 @@ class CustomTextField extends StatefulWidget {
     this.validator,
     this.prefixIcon,
     this.onTap,
+    this.labelText, // Added labelText
   });
 
   @override
@@ -29,21 +31,25 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
+    // Using Theme.of(context) to access InputDecorationTheme defined in AppTheme
+    final inputDecorationTheme = Theme.of(context).inputDecorationTheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0), // Reduced margin, changed to padding
       child: TextFormField(
         controller: widget.controller,
         obscureText: widget.isPassword ? _obscureText : false,
         keyboardType: widget.keyboardType,
         validator: widget.validator,
-        style: const TextStyle(color: Colors.white),
+        onTap: widget.onTap,
+        style: textTheme.bodyLarge, // Use theme's bodyLarge style for input text
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+          labelText: widget.labelText, // Use labelText
           hintText: widget.hintText,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 16),
-          prefixIcon: widget.prefixIcon != null 
+          prefixIcon: widget.prefixIcon != null
               ? IconTheme(
-                  data: const IconThemeData(color: Colors.grey),
+                  data: IconTheme.of(context).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                   child: widget.prefixIcon!,
                 )
               : null,
@@ -51,7 +57,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
               ? IconButton(
                   icon: Icon(
                     _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    color: Colors.grey,
                   ),
                   onPressed: () {
                     setState(() {
@@ -60,28 +65,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   },
                 )
               : null,
-          filled: true,
-          fillColor: const Color(0xFF2A2A2A),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade800, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF4E8D7C), width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 1.5),
-          ),
+          // The following properties are now primarily controlled by inputDecorationTheme in AppTheme:
+          // contentPadding, hintStyle, filled, fillColor, border, enabledBorder, focusedBorder, errorBorder, focusedErrorBorder
+          // However, you can override specific properties if needed for this particular widget.
         ),
       ),
     );

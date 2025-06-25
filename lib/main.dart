@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
 import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
+import 'package:flutter_course_2/constants/app_theme.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/page/note_view.dart';
 import 'package:flutter_course_2/page/create_update_note_view.dart';
@@ -24,7 +25,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Automatically selects theme based on system settings
       routes: {
         loginRoute: (context) => const LoginScreen(),
         registerRoute: (context) => const RegisterScreen(),
