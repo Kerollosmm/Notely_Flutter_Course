@@ -7,7 +7,7 @@ import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
-import 'package:flutter_course_2/widgets/Botton.dart';
+import 'package:flutter_course_2/widgets/Botton.dart'; // Will be CustomButton
 import 'package:flutter_course_2/widgets/customFeild.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
 import 'package:flutter_course_2/widgets/snakbar.dart';
@@ -76,21 +76,22 @@ class _LoginScreenState extends State<LoginScreen>
                   opacity: _fadeAnimation,
                   child: CustomTextField(
                     controller: _email,
-                    hintText: "Email Address",
+                    labelText: "Email Address",
+                    hintText: "Enter your email",
                     keyboardType: TextInputType.emailAddress,
-                    isPassword: false,
                     prefixIcon: const Icon(Icons.email_outlined),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              // const SizedBox(height: 16), // Spacing is handled by CustomTextField's padding
               SlideTransition(
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: CustomTextField(
                     controller: _password,
-                    hintText: 'Password',
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
                     isPassword: true,
                     prefixIcon: const Icon(Icons.lock_outline),
                     validator: (value) {
@@ -117,14 +118,14 @@ class _LoginScreenState extends State<LoginScreen>
                   onPressed: () {
                     // Forgot password logic
                   },
-                  child: const Text(
+                  child: Text(
                     "Forgot Password?",
-                    style: TextStyle(color: Color(0xFF4E8D7C)),
+                    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Bottom(
+              const SizedBox(height: 24), // Increased spacing before button
+              CustomButton( // Changed from Bottom to CustomButton
                 title: "Login",
                 isLoading: _isLoading,
                 ontap: () async {
@@ -183,9 +184,9 @@ class _LoginScreenState extends State<LoginScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Don't have an account?",
-                    style: TextStyle(color: Colors.white70),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   TextButton(
                     onPressed: () {
@@ -196,28 +197,28 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       "Register Now",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF4E8D7C),
+                        color: Theme.of(context).colorScheme.secondary,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Row(
+              const SizedBox(height: 24), // Increased spacing
+              Row(
                 children: [
-                  Expanded(child: Divider(color: Colors.white38)),
+                  Expanded(child: Divider(color: Theme.of(context).dividerColor)),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text("OR", style: TextStyle(color: Colors.white38)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text("OR", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
                   ),
-                  Expanded(child: Divider(color: Colors.white38)),
+                  Expanded(child: Divider(color: Theme.of(context).dividerColor)),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24), // Increased spacing
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -248,13 +249,14 @@ class _LoginScreenState extends State<LoginScreen>
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 48,
-        height: 48,
+        width: 56, // Increased size
+        height: 56, // Increased size
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).colorScheme.surfaceVariant, // Use surfaceVariant for background
+          borderRadius: BorderRadius.circular(16), // More rounded corners
+          border: Border.all(color: Theme.of(context).dividerColor) // Optional: add a subtle border
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14), // Adjusted padding
         child: Image.asset(icon),
       ),
     );
