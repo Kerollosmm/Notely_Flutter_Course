@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
-import 'package:flutter_course_2/page/home_page.dart';
-
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/page/note_view.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
 
 class AccountAnalyze extends StatefulWidget {
   const AccountAnalyze({Key? key}) : super(key: key);
@@ -14,34 +16,25 @@ class AccountAnalyze extends StatefulWidget {
 
 class _AccountAnalyzeState extends State<AccountAnalyze> {
   @override
+  void initState() {
+    super.initState();
+    context.read<AuthBloc>().add(const AuthEventsInitialize());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: AuthSeries.firebase().initialize(),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              final user = AuthSeries.firebase().currentUser;
-              if (user != null) {
-                if (user.isEmailVerified) {
-                  return  HomePage();
-                } else {
-                  return Scaffold(
-                    body: Center(
-                      child: EmailVerificationDialog(),
-                    ),
-                  );
-                }
-              } else {
-                return const LoginScreen();
-              }
-            case ConnectionState.waiting:
-              return const SplashScreen();
-            default:
-              return Center(child: Text('Error: ${snapshot.error}'));
-          }
-        },
-      ),
+    return BlocBuilder<AuthBloc , AuthState>(
+      builder: (context, state) {
+        if (state is AuthStateLogIn) {
+          return NotesView();
+        } else if (state is AuthStateNeedsVerification) {
+          return Scaffold(body: Center(child: EmailVerificationDialog()));
+        } else if (state is AuthStateLogOut) {
+          return const LoginScreen();
+        }else{
+          return SplashScreen();
+        }
+      },
     );
   }
 }
@@ -60,11 +53,9 @@ class SplashScreen extends StatelessWidget {
               height: 100,
               width: 100,
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/Applogo.jpg"),
-                ),
+                image: DecorationImage(image: AssetImage("assets/Applogo.jpg")),
               ),
-            )
+            ),
           ],
         ),
       ),

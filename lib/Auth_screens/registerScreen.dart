@@ -9,7 +9,7 @@ import 'package:flutter_course_2/Auth_screens/veryfy.dart';
 import 'dart:developer' as devtools show log;
 
 import 'package:flutter_course_2/firebase_options.dart';
-import 'package:flutter_course_2/page/home_page.dart';
+import 'package:flutter_course_2/page/note_view.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
@@ -133,7 +133,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               final password = _password.text;
 
               try {
-                await AuthSeries.firebase().createUser(
+                await AuthService.firebase().createUser(
                   email: email,
                   password: password,
                 );
@@ -141,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 User? user = FirebaseAuth.instance.currentUser;
 
                 if (user != null) {
-                  await AuthSeries.firebase().sendEmailVerification();
+                  await AuthService.firebase().sendEmailVerification();
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {

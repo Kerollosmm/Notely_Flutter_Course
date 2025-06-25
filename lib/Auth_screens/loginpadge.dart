@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
-import 'package:flutter_course_2/Auth_screens/veryfy.dart';
-import 'package:flutter_course_2/page/home_page.dart';
-
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/widgets/Botton.dart';
 import 'package:flutter_course_2/widgets/customFeild.dart';
@@ -148,33 +147,9 @@ class _LoginScreenState extends State<LoginScreen>
                     });
                   } else {
                     try {
-                      await AuthSeries.firebase().logIn(
-                        email: email,
-                        password: password,
+                      context.read<AuthBloc>().add(
+                        AuthEventsLogIn(email, password),
                       );
-
-                      final user = AuthSeries.firebase().currentUser;
-                      final userEmail = _email.text;
-
-                      if (user?.isEmailVerified ?? false) {
-                        if (mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HomePage(),
-                            ),
-                          );
-                        }
-                      } else {
-                        if (mounted) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return EmailVerificationDialog(Email: userEmail);
-                            },
-                          );
-                        }
-                      }
                     } on UserNotFoundAuthExceptions {
                       showErrorDialog(
                         context,
@@ -184,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen>
                     } on WrongPasswordAuthException {
                       showErrorDialog(
                         context,
-                       
+
                         "Please check your password and Email",
                       );
                       devtools.log('Wrong passWord');

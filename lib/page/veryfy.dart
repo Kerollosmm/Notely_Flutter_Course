@@ -7,7 +7,7 @@ import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 
 // ignore: must_be_immutable
 class EmailVerificationDialog extends StatelessWidget {
-  final user= AuthSeries.firebase().currentUser; 
+  final user= AuthService.firebase().currentUser; 
   final String? Email;
 
    EmailVerificationDialog({super.key,this.Email});
@@ -54,7 +54,7 @@ class EmailVerificationDialog extends StatelessWidget {
                 ),
                 onPressed: ()async{
                   // Handle resend email
-                  await AuthSeries.firebase().sendEmailVerification();
+                  await AuthService.firebase().sendEmailVerification();
                 },
                 child:const Text('Resend email',style: TextStyle(
                   color: Colors.white,

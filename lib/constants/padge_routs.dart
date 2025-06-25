@@ -1,10 +1,10 @@
 const loginRoute='/login';
 const registerRoute='/register';
-const HomePageRoute='/homepage';
+const NotesViewRoute='/NotesView';
 const accountAnalyzeRoute='/accountAnalyze';
 const verifyAccount = '/verifyAccount';
 const TaskDetailes = '/taskdetailes';
 const TaskViewRoute='/TaskView';
 const TaskPadgeRoute='/taskPage';
-const MyHomePageb ='/MyHomePageB';
+const MyNotesViewb ='/MyNotesViewB';
 const noteView = '/noteView';

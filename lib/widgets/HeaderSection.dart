@@ -27,7 +27,7 @@ class _HeaderSectionState extends State<HeaderSection> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-          final User=AuthSeries.firebase().currentUser;
+          final User=AuthService.firebase().currentUser;
            
 
             return AppBar(
@@ -39,7 +39,7 @@ class _HeaderSectionState extends State<HeaderSection> {
                         final shouldLogout = await showLogOutDialog(context);
                         devTools.log('Should logout: $shouldLogout');
                         if (shouldLogout) {
-                          await AuthSeries.firebase().logOut();
+                          await AuthService.firebase().logOut();
                           Navigator.pushNamedAndRemoveUntil(context, loginRoute, (routes) => false);
                         }
                         break;

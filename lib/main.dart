@@ -1,13 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
 import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
-import 'package:flutter_course_2/page/home_page.dart';
+import 'package:flutter_course_2/page/note_view.dart';
 import 'package:flutter_course_2/page/create_update_note_view.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_course_2/services/auth/firebase_auth_provider.dart';
 
-void main()async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const MyApp());
@@ -21,17 +24,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        
-      ),
+      theme: ThemeData(),
       routes: {
-         loginRoute: (context) => const LoginScreen(),
+        loginRoute: (context) => const LoginScreen(),
         registerRoute: (context) => const RegisterScreen(),
         accountAnalyzeRoute: (context) => const AccountAnalyze(),
-        HomePageRoute: (context) =>  HomePage(),   
+        NotesViewRoute: (context) => NotesView(),
         noteView: (context) => const CreateUpdateNoteView(),
       },
-      home: const AccountAnalyze(),
+      home: BlocProvider<AuthBloc>(
+        create: (context) => AuthBloc(FirebaseAuthProvider()),
+        child: const AccountAnalyze(),
+      ),
     );
   }
 }

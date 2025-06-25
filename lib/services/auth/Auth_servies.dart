@@ -3,12 +3,12 @@ import 'package:flutter_course_2/services/auth/auth_provider.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
 import 'package:flutter_course_2/services/auth/firebase_auth_provider.dart';
 
-class AuthSeries implements AuthProvider {
+class AuthService implements AuthProvider {
   final AuthProvider provider;
 
-  AuthSeries({required this.provider});
+  AuthService({required this.provider});
 
-  factory AuthSeries.firebase() => AuthSeries(
+  factory AuthService.firebase() => AuthService(
         provider: FirebaseAuthProvider(),
       );
   @override
