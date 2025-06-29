@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
+
 
 // ignore: must_be_immutable
 class EmailVerificationDialog extends StatelessWidget {
@@ -93,11 +97,8 @@ class EmailVerificationDialog extends StatelessWidget {
                       elevation: 0,
                     ),
                     onPressed: () {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        loginRoute,
-                        (route) => false,
-                      ); 
+                     context.read<AuthBloc>().add(const AuthEventsLogOut());
+                      
                     },
                     child: const Text(
                       'Update email',

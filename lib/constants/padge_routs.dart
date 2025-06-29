@@ -1,10 +1,1 @@
-const loginRoute='/login';
-const registerRoute='/register';
-const NotesViewRoute='/NotesView';
-const accountAnalyzeRoute='/accountAnalyze';
-const verifyAccount = '/verifyAccount';
-const TaskDetailes = '/taskdetailes';
-const TaskViewRoute='/TaskView';
-const TaskPadgeRoute='/taskPage';
-const MyNotesViewb ='/MyNotesViewB';
-const noteView = '/noteView';
+const createOrUpdateNoteRoute = '/noteView';

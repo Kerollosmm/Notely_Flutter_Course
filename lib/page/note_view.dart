@@ -61,7 +61,7 @@ class _NotesViewState extends State<NotesView> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context).pushNamed(noteView);
+          Navigator.of(context).pushNamed(createOrUpdateNoteRoute);
         },
         label: Text('Add Note', style: TextStyle(color: theme.colorScheme.onSecondary)),
         icon: Icon(Icons.add, color: theme.colorScheme.onSecondary),
@@ -106,7 +106,7 @@ class _NotesViewState extends State<NotesView> {
               },
               onTap: (note) {
                 Navigator.of(context).pushNamed(
-                  noteView,
+                  createOrUpdateNoteRoute,
                   arguments: note,
                 );
               },

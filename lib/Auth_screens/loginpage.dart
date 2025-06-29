@@ -1,28 +1,33 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
 import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
+import 'package:flutter_course_2/utailates/dialogs/loading_dialog.dart';
 import 'package:flutter_course_2/widgets/Bottom.dart';
 import 'package:flutter_course_2/widgets/CustomTextField.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
+import 'package:flutter_course_2/widgets/snakbar.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+import 'dart:developer' as devtools show log;
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen>
+class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  late final TextEditingController _email;
-  late final TextEditingController _password;
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  CloseDialog? _closeDialogHandel;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -30,9 +35,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   void initState() {
     super.initState();
-    _email = TextEditingController();
-    _password = TextEditingController();
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -62,30 +64,30 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
-        if (state is AuthStateRegister) {
-          if (state.exception is WeakPasswordAuthExceptions) {
-            await showErrorDialog(
-              context,
-              "The password provided is too weak.",
+        if (state is AuthStateLogOut) {
+          final closeDialog = _closeDialogHandel;
+          if (!state.isLoading && closeDialog != null) {
+            closeDialog();
+            _closeDialogHandel = null;
+          } else if (state.isLoading && closeDialog == null) {
+            _closeDialogHandel = showLoadingDialog(
+              context: context,
+              text: 'Loading ... ',
             );
-          } else if (state.exception is EmailAlreadyInUseAuthExceptions) {
-            await showErrorDialog(
-              context,
-              "The email address is already in use.",
-            );
-          } else if (state.exception is InvalidEmailAuthExceptions) {
-            await showErrorDialog(context, "Invalid Email.");
+          }
+
+          if (state.exception is UserNotFoundAuthExceptions) {
+            await showErrorDialog(context, "User Not Found");
+          } else if (state.exception is WrongPasswordAuthException) {
+            await showErrorDialog(context, "Wrong Credentials");
           } else if (state.exception is GenericAuthExceptions) {
-            await showErrorDialog(
-              context,
-              "An error occurred while registering. Please try again.",
-            );
+            await showErrorDialog(context, "Authentications Error ");
           }
         }
       },
       child: AuthScreenLayout(
-        title: "Create Account",
-        subtitle: "Sign up to get started",
+        title: "Login",
+        subtitle: "Sign in to your account",
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SlideTransition(
@@ -93,10 +95,10 @@ class _RegisterScreenState extends State<RegisterScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
                     child: CustomTextField(
                       controller: _email,
                       labelText: "Email Address",
@@ -106,10 +108,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
+                // const SizedBox(height: 16), // Spacing is handled by CustomTextField's padding
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
                     child: CustomTextField(
                       controller: _password,
                       labelText: 'Password',
@@ -134,36 +137,63 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                CustomButton(
-                  // Changed from Bottom to CustomButton
-                  title: "Register",
-                  ontap: () async {
-                    final email = _email.text;
-                    final password = _password.text;
-
-                    context.read<AuthBloc>().add(
-                      AuthEventsRegister(email, password),
-                    );
-                  },
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      // Forgot password logic
+                    },
+                    child: Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24), // Increased spacing before button
+                BlocListener<AuthBloc, AuthState>(
+                  listener: (context, state) async {},
+                  child: CustomButton(
+                    // Changed from Bottom to CustomButton
+                    title: "Login",
+                    ontap: () async {
+                      final email = _email.text;
+                      final password = _password.text;
+
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          ErrorSnackBar(
+                            message: "Please fill all fields to continue",
+                          ),
+                        );
+                      } else {
+                        context.read<AuthBloc>().add(
+                          AuthEventsLogIn(email, password),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Already have an account?",
+                      "Don't have an account?",
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     TextButton(
                       onPressed: () {
-                        context.read<AuthBloc>().add(const AuthEventsLogOut());
+                        context.read<AuthBloc>().add(
+                          const AuthEventsShouldRegister(),
+                        );
                       },
                       child: Text(
-                        "Login Now",
+                        "Register Now",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: Theme.of(context).colorScheme.onSecondary,
                         ),
                       ),
                     ),
@@ -198,7 +228,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     _socialButton(
                       icon: 'assets/icons/google.png',
                       onTap: () {
-                        showErrorDialog(context, "Wait");
+                        // Add Google auth logic
                       },
                     ),
                     const SizedBox(width: 24),
@@ -206,7 +236,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                       icon: 'assets/icons/facebook.png',
                       onTap: () {
                         // Add Facebook auth logic
-                        showErrorDialog(context, "Wait");
                       },
                     ),
                   ],

@@ -23,14 +23,10 @@ class FirebaseCloudStorage {
 
   Future<void> updateNotes({
     required String documentId,
-    required String title, // Added title
     required String text,
   }) async {
     try {
-      await notes.doc(documentId).update({
-        titleFieldName: title, // Added title
-        textFieldName: text,
-      });
+      await notes.doc(documentId).update({textFieldName: text});
     } catch (e) {
       throw CouldNotUpdateNoteException();
     }
@@ -49,20 +45,16 @@ class FirebaseCloudStorage {
     }
   }
 
-  Future<CloudNote> createNewNote({required String ownerUserId, String title = '', String text = ''}) async {
+  Future<CloudNote> createNewNote({required String ownerUserId}) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
-      titleFieldName: title, // Added title
-      textFieldName: text,  // Used provided text or default
+      textFieldName: '',
     });
     final fitchNote = await document.get();
-    // Ensure data exists and fields are correctly typed, providing defaults if necessary
-    final data = fitchNote.data();
     return CloudNote(
       documentId: fitchNote.id,
-      ownerUserId: data?[ownerFieldUserId] as String? ?? ownerUserId, // Use fetched or fallback to input
-      title: data?[titleFieldName] as String? ?? title,             // Use fetched or fallback to input
-      text: data?[textFieldName] as String? ?? text,                // Use fetched or fallback to input
+      ownerUserId: ownerFieldUserId,
+      text: '',
     );
   }
 

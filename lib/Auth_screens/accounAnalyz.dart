@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_course_2/Auth_screens/loginpadge.dart';
+import 'package:flutter_course_2/Auth_screens/loginpage.dart';
+import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
+import 'package:flutter_course_2/constants/app_theme.dart';
 import 'package:flutter_course_2/page/note_view.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
@@ -31,33 +33,27 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
           return Scaffold(body: Center(child: EmailVerificationDialog()));
         } else if (state is AuthStateLogOut) {
           return const LoginScreen();
-        }else{
-          return SplashScreen();
+        }else if(state is AuthStateRegister){
+          return const RegisterScreen();
+
+        }  else{
+          return LaudingScreen();
         }
       },
     );
   }
 }
 
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+class LaudingScreen extends StatelessWidget {
+  const LaudingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: const BoxDecoration(
-                image: DecorationImage(image: AssetImage("assets/Applogo.jpg")),
-              ),
-            ),
-          ],
-        ),
+        child:CircularProgressIndicator(
+          color: AppTheme.secondaryColorLight,
+        )
       ),
     );
   }

@@ -8,6 +8,9 @@ import 'dart:developer' as devTools show log;
 import 'package:flutter_course_2/firebase_options.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/widgets/MyAlert.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 
 
 class HeaderSection extends StatefulWidget {
@@ -37,10 +40,10 @@ class _HeaderSectionState extends State<HeaderSection> {
                     switch (value) {
                       case MenuAction.logout:
                         final shouldLogout = await showLogOutDialog(context);
-                        devTools.log('Should logout: $shouldLogout');
                         if (shouldLogout) {
-                          await AuthService.firebase().logOut();
-                          Navigator.pushNamedAndRemoveUntil(context, loginRoute, (routes) => false);
+                          context.read<AuthBloc>().add(
+                            const AuthEventsLogOut(),
+                          );
                         }
                         break;
                     }

@@ -5,8 +5,8 @@ class AppTheme {
   // Modern Color Palette
   static const Color primaryColorLight = Color(0xFF6200EE);
   static const Color primaryVariantLight = Color(0xFF3700B3);
-  static const Color secondaryColorLight = Color(0xFF03DAC6);
-  static const Color secondaryVariantLight = Color(0xFF018786);
+  static const Color secondaryColorLight = Color(0xFFFBBC04); // Google Keep orange
+  static const Color secondaryVariantLight = Color(0xFFE6A800); // Slightly darker orange
   static const Color backgroundLight = Color(0xFFFFFFFF);
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color errorLight = Color(0xFFB00020);
@@ -19,7 +19,7 @@ class AppTheme {
 
   static const Color primaryColorDark = Color(0xFFBB86FC);
   static const Color primaryVariantDark = Color(0xFF3700B3); // Kept same as light for consistency or can be #3700B3
-  static const Color secondaryColorDark = Color(0xFF03DAC6); // Teal, often used in dark themes
+  static const Color secondaryColorDark = Color(0xFFFBBC04); // Google Keep orange
   static const Color backgroundDark = Color(0xFF121212); // Standard dark theme background
   static const Color surfaceDark = Color(0xFF1E1E1E); // Slightly lighter than background for cards/dialogs
   static const Color errorDark = Color(0xFFCF6679); // Standard dark theme error
@@ -51,7 +51,7 @@ class AppTheme {
   static ThemeData get lightTheme => ThemeData(
         brightness: Brightness.light,
         primaryColor: primaryColorLight,
-        colorScheme: const ColorScheme(
+        colorScheme: ColorScheme(
           brightness: Brightness.light,
           primary: primaryColorLight,
           onPrimary: onPrimaryLight,
@@ -76,7 +76,7 @@ class AppTheme {
           surfaceVariant: Color(0xFFEEEEEE), // For elements like dividers or disabled tracks
           onSurfaceVariant: onBackgroundLight,
           outline: Color(0xFFBDBDBD),
-          shadow: Colors.black.withOpacity(0.1),
+          shadow: const Color(0x1A000000), // Equivalent to black.withOpacity(0.1)
           inverseSurface: onSurfaceLight, // Typically a dark background for snackbars on light theme
           onInverseSurface: surfaceLight, // Text color for inverseSurface
           inversePrimary: primaryColorDark, // For elements like primary buttons on dark surfaces
@@ -113,9 +113,9 @@ class AppTheme {
           ),
           labelStyle: _textTheme.bodyMedium?.copyWith(color: onSurfaceLight.withOpacity(0.7)),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2,
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           color: noteCardBackgroundLight,
         ),
@@ -128,7 +128,7 @@ class AppTheme {
   static ThemeData get darkTheme => ThemeData(
         brightness: Brightness.dark,
         primaryColor: primaryColorDark,
-        colorScheme: const ColorScheme(
+        colorScheme: ColorScheme(
           brightness: Brightness.dark,
           primary: primaryColorDark,
           onPrimary: onPrimaryDark,
@@ -153,7 +153,7 @@ class AppTheme {
           surfaceVariant: Color(0xFF303030),
           onSurfaceVariant: onBackgroundDark,
           outline: Color(0xFF424242),
-          shadow: Colors.black.withOpacity(0.3),
+          shadow: const Color(0x4D000000), // Equivalent to black.withOpacity(0.3)
           inverseSurface: onSurfaceDark,
           onInverseSurface: surfaceDark,
           inversePrimary: primaryColorLight,
@@ -190,9 +190,9 @@ class AppTheme {
           ),
           labelStyle: _textTheme.bodyMedium?.copyWith(color: onSurfaceDark.withOpacity(0.7)),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 4,
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           color: noteCardBackgroundDark,
         ),

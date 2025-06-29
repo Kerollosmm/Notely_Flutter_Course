@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 class CustomButton extends StatelessWidget {
   final String title;
   final VoidCallback ontap;
-  final bool isLoading;
   final Color? backgroundColor; // Can still be used for specific overrides
   final Color? textColor; // Can still be used for specific overrides
   final double? width;
@@ -15,7 +14,6 @@ class CustomButton extends StatelessWidget {
     super.key,
     required this.title,
     required this.ontap,
-    this.isLoading = false,
     this.backgroundColor,
     this.textColor,
     this.width,
@@ -35,44 +33,30 @@ class CustomButton extends StatelessWidget {
       width: width ?? double.infinity, // Use provided width or expand
       height: height ?? 48, // Use provided height or default to 48
       child: ElevatedButton(
-        onPressed: isLoading
-            ? null
-            : () {
-                HapticFeedback.mediumImpact();
-                ontap();
-              },
+        onPressed: () {
+          HapticFeedback.mediumImpact();
+          ontap();
+        },
         style: ElevatedButton.styleFrom(
-          backgroundColor: isLoading
-              ? (backgroundColor ?? buttonTheme.style?.backgroundColor?.resolve({MaterialState.disabled}))?.withOpacity(0.7)
-              : backgroundColor ?? buttonTheme.style?.backgroundColor?.resolve({}),
+          backgroundColor: backgroundColor ?? buttonTheme.style?.backgroundColor?.resolve({}),
           foregroundColor: textColor ?? buttonTheme.style?.foregroundColor?.resolve({}),
           textStyle: buttonTextStyle, // Apply the theme's button text style
           padding: buttonTheme.style?.padding?.resolve({}),
           shape: buttonTheme.style?.shape?.resolve({}),
           elevation: buttonTheme.style?.elevation?.resolve({}),
         ).copyWith(
-           side: buttonTheme.style?.side, // Ensure side property is copied if defined in theme
+            side: buttonTheme.style?.side, // Ensure side property is copied if defined in theme
         ),
-        child: isLoading
-            ? SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  // Use onPrimary color for the loader for better contrast on primary colored buttons
-                  color: textColor ?? Theme.of(context).colorScheme.onPrimary,
-                  strokeWidth: 2.0,
-                ),
+        child: (icon != null)
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  icon!,
+                  const SizedBox(width: 8), // Space between icon and text
+                  Text(title),
+                ],
               )
-            : (icon != null)
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    icon!,
-                    const SizedBox(width: 8), // Space between icon and text
-                    Text(title),
-                  ],
-                )
-              : Text(title),
+            : Text(title),
       ),
     );
   }

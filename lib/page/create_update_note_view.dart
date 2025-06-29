@@ -16,14 +16,12 @@ class CreateUpdateNoteView extends StatefulWidget {
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   CloudNote? _note;
   late final FirebaseCloudStorage _notesService;
-  late final TextEditingController _titleController;
   late final TextEditingController _textController;
   bool _isSaving = false;
 
   @override
   void initState() {
     _notesService = FirebaseCloudStorage();
-    _titleController = TextEditingController();
     _textController = TextEditingController();
     super.initState();
   }
@@ -31,15 +29,12 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   void _contentControllerListener() async {
     final note = _note;
     if (note == null) return;
-    final title = _titleController.text;
     final text = _textController.text;
     // Auto-save on content change
-    await _notesService.updateNotes(documentId: note.documentId, title: title, text: text);
+    await _notesService.updateNotes(documentId: note.documentId,text: text);
   }
 
   void _setupTextControllerListeners() {
-    _titleController.removeListener(_contentControllerListener);
-    _titleController.addListener(_contentControllerListener);
     _textController.removeListener(_contentControllerListener);
     _textController.addListener(_contentControllerListener);
   }
@@ -49,7 +44,6 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
     if (widgetNote != null) {
       _note = widgetNote;
-      _titleController.text = widgetNote.title;
       _textController.text = widgetNote.text;
       _setupTextControllerListeners(); // Ensure listeners are set up for existing notes
       return widgetNote;
@@ -64,7 +58,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     final currentUser = AuthService.firebase().currentUser!;
     final userId = currentUser.id;
     // For a new note, title and text will be empty initially
-    final newNote = await _notesService.createNewNote(ownerUserId: userId, title: '', text: '');
+    final newNote = await _notesService.createNewNote(ownerUserId: userId,);
     _note = newNote;
     _setupTextControllerListeners(); // Setup listeners for the new note
     return newNote;
@@ -72,7 +66,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
   void _deleteNoteIfEmpty() {
     final note = _note;
-    if (_titleController.text.isEmpty && _textController.text.isEmpty && note != null) {
+    if (_textController.text.isEmpty && note != null) {
       _notesService.deleteNotes(documentId: note.documentId);
     }
   }
@@ -82,11 +76,10 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       _isSaving = true;
     });
     final note = _note;
-    final title = _titleController.text;
     final text = _textController.text;
     if (note != null) {
-      if (title.isNotEmpty || text.isNotEmpty) {
-        await _notesService.updateNotes(documentId: note.documentId, title: title, text: text);
+      if (text.isNotEmpty) {
+        await _notesService.updateNotes(documentId: note.documentId,text: text);
       } else {
         // If both are empty, consider deleting or handling as per app logic (current: delete on dispose)
       }
@@ -106,7 +99,6 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     _deleteNoteIfEmpty(); // Delete if both title and text are empty
     // Auto-saving is handled by listeners, explicit save is manual.
     // Consider if a final save is needed here if not relying on auto-save or explicit save.
-    _titleController.dispose();
     _textController.dispose();
     super.dispose();
   }
@@ -127,21 +119,16 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
                   child: CircularProgressIndicator(strokeWidth: 2.0, color: theme.colorScheme.onPrimary)),
             )
           else
-            IconButton(
-              icon: Icon(Icons.save_outlined, color: theme.colorScheme.onPrimaryContainer),
-              tooltip: 'Save Note',
-              onPressed: _saveNote,
-            ),
+           
           IconButton(
             icon: Icon(Icons.share_outlined, color: theme.colorScheme.onPrimaryContainer),
             tooltip: 'Share Note',
             onPressed: () async {
-              final title = _titleController.text;
               final text = _textController.text;
-              if (_note == null || (title.isEmpty && text.isEmpty)) {
+              if (_note == null || (text.isEmpty)) {
                 await showCannotShareEmptyNoteDialog(context);
               } else {
-                Share.share("$title\n\n$text", subject: title.isNotEmpty ? title : "Shared Note");
+                Share.share("\n\n$text", subject:"Shared Note");
               }
             },
           ),
@@ -156,7 +143,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-
+          
           // After future completes, _note should be set. If not (e.g. error before setting), show indicator.
           if (_note == null && snapshot.connectionState != ConnectionState.done) {
              return const Center(child: CircularProgressIndicator());
@@ -171,21 +158,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  TextField(
-                    controller: _titleController,
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: 'Title',
-                      hintStyle: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                      border: InputBorder.none, // Clean look for title
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+                
                   const SizedBox(height: 8),
                   Divider(color: theme.dividerColor),
                   const SizedBox(height: 8),
