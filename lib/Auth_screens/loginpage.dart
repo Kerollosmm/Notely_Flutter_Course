@@ -27,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  CloseDialog? _closeDialogHandel;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -65,17 +64,6 @@ class _LoginScreenState extends State<LoginScreen>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthStateLogOut) {
-          final closeDialog = _closeDialogHandel;
-          if (!state.isLoading && closeDialog != null) {
-            closeDialog();
-            _closeDialogHandel = null;
-          } else if (state.isLoading && closeDialog == null) {
-            _closeDialogHandel = showLoadingDialog(
-              context: context,
-              text: 'Loading ... ',
-            );
-          }
-
           if (state.exception is UserNotFoundAuthExceptions) {
             await showErrorDialog(context, "User Not Found");
           } else if (state.exception is WrongPasswordAuthException) {

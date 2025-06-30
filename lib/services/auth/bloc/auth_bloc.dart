@@ -6,7 +6,8 @@ import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvents, AuthState> {
-  AuthBloc(AuthProvider provider) : super(const AuthStateUninitialized()) {
+  AuthBloc(AuthProvider provider)
+    : super(const AuthStateUninitialized(isLoading: true)) {
     //send email verification
     on<AuthEventsSendEmailVerification>((event, emit) async {
       await provider.sendEmailVerification();
@@ -18,9 +19,9 @@ class AuthBloc extends Bloc<AuthEvents, AuthState> {
       try {
         await provider.createUser(email: email, password: password);
         await provider.sendEmailVerification();
-        emit(const AuthStateNeedsVerification());
+        emit( AuthStateNeedsVerification(isLoading: false));
       } on Exception catch (e) {
-        emit(AuthStateRegister(e));
+        emit(AuthStateRegister(exception: e, isLoading: false));
       }
     });
     //Initialize
@@ -30,14 +31,20 @@ class AuthBloc extends Bloc<AuthEvents, AuthState> {
       if (user == null) {
         emit(AuthStateLogOut(exception: null, isLoading: false));
       } else if (!user.isEmailVerified) {
-        emit(const AuthStateNeedsVerification());
+        emit(AuthStateNeedsVerification(isLoading: false));
       } else {
-        emit(AuthStateLogIn(user));
+        emit(AuthStateLogIn(user: user, isLoading: false));
       }
     });
     //log in
     on<AuthEventsLogIn>((event, emit) async {
-      emit(AuthStateLogOut(exception: null, isLoading: true));
+      emit(
+        AuthStateLogOut(
+          exception: null,
+          isLoading: true,
+          loadingText: 'please wait while you log you in ',
+        ),
+      );
       final email = event.email;
       final password = event.password;
       try {
@@ -45,17 +52,21 @@ class AuthBloc extends Bloc<AuthEvents, AuthState> {
 
         // Add a null check here
         if (user == null) {
-          emit(AuthStateLogOut(
-              exception: Exception('User not found'), isLoading: false));
+          emit(
+            AuthStateLogOut(
+              exception: Exception('User not found'),
+              isLoading: false,
+            ),
+          );
           return;
         }
 
         if (!user.isEmailVerified) {
           emit(AuthStateLogOut(exception: null, isLoading: false));
-          emit(const AuthStateNeedsVerification());
+          emit( AuthStateNeedsVerification(isLoading: false));
         } else {
           emit(AuthStateLogOut(exception: null, isLoading: false));
-          emit(AuthStateLogIn(user));
+          emit(AuthStateLogIn(user: user, isLoading: false));
         }
       } on Exception catch (e) {
         emit(AuthStateLogOut(exception: e, isLoading: false));

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.lightTheme, //C:\Users\KimoStore\flutter_course\flutter_course_2\test.json
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       routes: {
@@ -35,4 +35,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-// C:\Users\KimoStore\flutter_course\flutter_course_2\lib

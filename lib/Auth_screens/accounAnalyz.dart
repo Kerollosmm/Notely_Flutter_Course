@@ -4,6 +4,7 @@ import 'package:flutter_course_2/Auth_screens/loginpage.dart';
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
 import 'package:flutter_course_2/constants/app_theme.dart';
+import 'package:flutter_course_2/helpers/loading/loading_screen.dart';
 import 'package:flutter_course_2/page/note_view.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
@@ -25,7 +26,15 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc , AuthState>(
+    return BlocConsumer<AuthBloc , AuthState>(
+      listener: (context , state){
+        if (state.isLoading){
+          // TODO: show loading indicator
+          LoadingScreen().show(context: context, text:state.loadingText ?? 'please wait a moment ');
+        }else{
+          LoadingScreen().hide();
+        }
+      },
       builder: (context, state) {
         if (state is AuthStateLogIn) {
           return NotesView();
@@ -36,7 +45,7 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
         }else if(state is AuthStateRegister){
           return const RegisterScreen();
 
-        }  else{
+        }else{
           return LaudingScreen();
         }
       },
