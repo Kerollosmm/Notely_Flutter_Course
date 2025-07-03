@@ -8,10 +8,10 @@ class FirebaseCloudStorage {
 
   Stream<Iterable<CloudNote>> allNote({required String ownerUserId}) =>
       notes.snapshots().map(
-        (event) => event.docs
-            .map((doc) => CloudNote.fromSnapshot(doc))
-            .where((note) => note.ownerUserId == ownerUserId),
-      );
+            (event) => event.docs
+                .map((doc) => CloudNote.fromSnapshot(doc))
+                .where((note) => note.ownerUserId == ownerUserId),
+          );
 
   Future<void> deleteNotes({required String documentId}) async {
     try {
@@ -24,9 +24,13 @@ class FirebaseCloudStorage {
   Future<void> updateNotes({
     required String documentId,
     required String text,
+    required String title,
   }) async {
     try {
-      await notes.doc(documentId).update({textFieldName: text});
+      await notes.doc(documentId).update({
+        textFieldName: text,
+        titleFieldName: title,
+      });
     } catch (e) {
       throw CouldNotUpdateNoteException();
     }
@@ -49,12 +53,14 @@ class FirebaseCloudStorage {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
       textFieldName: '',
+      titleFieldName: '',
     });
     final fitchNote = await document.get();
     return CloudNote(
       documentId: fitchNote.id,
-      ownerUserId: ownerFieldUserId,
+      ownerUserId: ownerUserId,
       text: '',
+      title: '',
     );
   }
 

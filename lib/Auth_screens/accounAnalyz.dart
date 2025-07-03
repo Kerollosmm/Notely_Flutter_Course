@@ -61,7 +61,7 @@ class LaudingScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child:CircularProgressIndicator(
-          color: AppTheme.secondaryColorLight,
+          color: Colors.blue,
         )
       ),
     );
