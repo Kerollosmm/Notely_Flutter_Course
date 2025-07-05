@@ -62,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
-        if (state is AuthStateRegister) {
+        if (state is AuthStateRegistering) {
           if (state.exception is WeakPasswordAuthExceptions) {
             await showErrorDialog(
               context,
@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     final password = _password.text;
 
                     context.read<AuthBloc>().add(
-                      AuthEventsRegister(email, password),
+                      AuthEventRegister(email, password),
                     );
                   },
                 ),
@@ -157,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                     TextButton(
                       onPressed: () {
-                        context.read<AuthBloc>().add(const AuthEventsLogOut());
+                        context.read<AuthBloc>().add(const AuthEventLogOut());
                       },
                       child: Text(
                         "Login Now",
@@ -169,48 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 24), // Increased spacing
-                Row(
-                  children: [
-                    Expanded(
-                      child: Divider(color: Theme.of(context).dividerColor),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "OR",
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(color: Theme.of(context).dividerColor),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24), // Increased spacing
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _socialButton(
-                      icon: 'assets/icons/google.png',
-                      onTap: () {
-                        showErrorDialog(context, "Wait");
-                      },
-                    ),
-                    const SizedBox(width: 24),
-                    _socialButton(
-                      icon: 'assets/icons/facebook.png',
-                      onTap: () {
-                        // Add Facebook auth logic
-                        showErrorDialog(context, "Wait");
-                      },
-                    ),
-                  ],
-                ),
+              
               ],
             ),
           ),
@@ -219,25 +178,5 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  Widget _socialButton({required String icon, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 56, // Increased size
-        height: 56, // Increased size
-        decoration: BoxDecoration(
-          color: Theme.of(
-            context,
-          ).colorScheme.surfaceVariant, // Use surfaceVariant for background
-          borderRadius: BorderRadius.circular(16), // More rounded corners
-          border: Border.all(
-            color: Theme.of(context).dividerColor,
-          ), // Optional: add a subtle border
-        ),
-        padding: const EdgeInsets.all(14), // Adjusted padding
-        child: Image.asset(icon),
-      ),
-    );
-  }
+
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
@@ -90,8 +91,15 @@ class _SettingsViewState extends State<SettingsView> {
     return InkWell(
       onTap: () async {
         final shouldLogout = await showLogOutDialog(context);
-        if (shouldLogout && mounted) {
-          context.read<AuthBloc>().add(const AuthEventsLogOut());
+        if (shouldLogout) {
+          // Dispatch the logout event
+          context.read<AuthBloc>().add(const AuthEventLogOut());
+          // Navigate to the root and remove all previous screens
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const AccountAnalyze(),
+              ),
+              (route) => false);
         }
       },
       borderRadius: BorderRadius.circular(12.0),

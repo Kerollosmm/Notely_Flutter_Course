@@ -23,30 +23,48 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Accessing the ElevatedButtonThemeData from the current theme
-    final ElevatedButtonThemeData buttonTheme = Theme.of(context).elevatedButtonTheme;
-    // Accessing the text style for buttons from the theme
-    final TextStyle? buttonTextStyle = buttonTheme.style?.textStyle?.resolve({MaterialState.selected});
+    // Define the base style from the image design.
+    // This creates the blue, pill-shaped button look by default.
+    final ButtonStyle baseStyle = ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF1976D2), // A nice, solid blue color
+      foregroundColor: Colors.white, // White text for good contrast
+      shape: const StadiumBorder(), // This creates the fully rounded "pill" shape
+      elevation: 0, // No shadow, for a flatter look like in the image
+      textStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+      ),
+    );
 
+    // Get the button style from the application's theme.
+    // This allows for global overrides.
+    final ButtonStyle? themeStyle = Theme.of(context).elevatedButtonTheme.style;
+
+    // Define overrides from the widget's constructor parameters.
+    // This allows for specific overrides on a per-button basis.
+    final ButtonStyle overrideStyle = ButtonStyle(
+      backgroundColor: backgroundColor != null ? MaterialStateProperty.all(backgroundColor) : null,
+      foregroundColor: textColor != null ? MaterialStateProperty.all(textColor) : null,
+      fixedSize: (width != null || height != null)
+          ? MaterialStateProperty.all(Size(width ?? double.infinity, height ?? 48))
+          : null,
+    );
+
+    // Layer the styles correctly:
+    // 1. Start with the base style.
+    // 2. Merge the theme style over it (theme wins over base).
+    // 3. Merge the override style over that (constructor params win over all).
+    final ButtonStyle finalStyle = baseStyle.merge(themeStyle).merge(overrideStyle);
 
     return SizedBox(
-      width: width ?? double.infinity, // Use provided width or expand
+      width: width ?? double.infinity, // Use provided width or expand to fill
       height: height ?? 48, // Use provided height or default to 48
       child: ElevatedButton(
         onPressed: () {
           HapticFeedback.mediumImpact();
           ontap();
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? buttonTheme.style?.backgroundColor?.resolve({}),
-          foregroundColor: textColor ?? buttonTheme.style?.foregroundColor?.resolve({}),
-          textStyle: buttonTextStyle, // Apply the theme's button text style
-          padding: buttonTheme.style?.padding?.resolve({}),
-          shape: buttonTheme.style?.shape?.resolve({}),
-          elevation: buttonTheme.style?.elevation?.resolve({}),
-        ).copyWith(
-            side: buttonTheme.style?.side, // Ensure side property is copied if defined in theme
-        ),
+        style: finalStyle,
         child: (icon != null)
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,

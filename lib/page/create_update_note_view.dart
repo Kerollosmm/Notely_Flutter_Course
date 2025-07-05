@@ -118,10 +118,15 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
                 TextField(
                   controller: _titleController,
                   style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black, // Ensure text is visible
+                  ),
                   decoration: const InputDecoration(
                     hintText: 'Title',
                     border: InputBorder.none,
+                    filled: true, // Enable background fill
+                    fillColor: Colors.white, // Set background to white
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -134,9 +139,13 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
                     textAlignVertical: TextAlignVertical.top,
                     decoration: const InputDecoration(
                       hintText: 'Note',
-                      border: InputBorder.none,
+                      filled: true, // Enable background fill
+                      fillColor: Colors.white, // Set background to white
                     ),
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black, // Ensure text is visible
+                    ),
                   ),
                 ),
               ],

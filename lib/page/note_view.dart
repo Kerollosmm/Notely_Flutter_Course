@@ -7,9 +7,91 @@ import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/utailates/dialogs/delete_dialog.dart';
 import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
-import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/notes/search_bar.dart';
+
+typedef NoteCallback = void Function(CloudNote note);
+
+class NoteListView extends StatelessWidget {
+  final List<CloudNote> notes;
+  final NoteCallback onDeleteNote;
+  final NoteCallback onTap;
+
+  const NoteListView({
+    super.key,
+    required this.notes,
+    required this.onDeleteNote,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return GestureDetector(
+          onTap: () => onTap(note),
+          onLongPress: () async {
+            final shouldDelete = await showDeleteDialog(context);
+            if (shouldDelete) {
+              onDeleteNote(note);
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: const Icon(Icons.article_outlined, color: Colors.grey),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        note.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        note.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 class NotesView extends StatefulWidget {
   const NotesView({Key? key}) : super(key: key);
@@ -18,7 +100,7 @@ class NotesView extends StatefulWidget {
   _NotesViewState createState() => _NotesViewState();
 }
 
-class _NotesViewState extends State<NotesView> {
+class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
   late final FirebaseCloudStorage _notesService;
   String get userId => AuthService.firebase().currentUser!.id;
 
@@ -26,10 +108,21 @@ class _NotesViewState extends State<NotesView> {
   List<CloudNote> _allNotes = [];
   List<CloudNote> _filteredNotes = [];
 
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
   @override
   void initState() {
     _notesService = FirebaseCloudStorage();
     _searchController.addListener(_filterNotes);
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
     super.initState();
   }
 
@@ -48,6 +141,7 @@ class _NotesViewState extends State<NotesView> {
   void dispose() {
     _searchController.removeListener(_filterNotes);
     _searchController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -56,14 +150,16 @@ class _NotesViewState extends State<NotesView> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Notes', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text('Notes',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
             onPressed: () async {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsView()));
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => SettingsView()));
             },
             icon: const Icon(Icons.settings, color: Colors.black),
           ),
@@ -86,7 +182,8 @@ class _NotesViewState extends State<NotesView> {
               child: StreamBuilder<Iterable<CloudNote>>(
                 stream: _notesService.allNote(ownerUserId: userId),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting && _allNotes.isEmpty) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      _allNotes.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
@@ -94,7 +191,6 @@ class _NotesViewState extends State<NotesView> {
                   }
                   if (snapshot.hasData) {
                     _allNotes = snapshot.data!.toList();
-                    // Apply filter right away
                     final query = _searchController.text.toLowerCase();
                     _filteredNotes = _allNotes
                         .where((note) =>
@@ -103,38 +199,45 @@ class _NotesViewState extends State<NotesView> {
                         .toList();
 
                     if (_allNotes.isEmpty) {
-                       return Center(
+                      return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.note_alt_outlined, size: 80, color: Colors.grey[300]),
+                            Icon(Icons.note_alt_outlined,
+                                size: 80, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
                               'No Notes Yet!',
-                              style: TextStyle(fontSize: 22, color: Colors.grey[600]),
+                              style: TextStyle(
+                                  fontSize: 22, color: Colors.grey[600]),
                             ),
                             const SizedBox(height: 8),
-                             Text(
+                            Text(
                               'Tap the "+" button to create your first note.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.grey[500]),
                             ),
                           ],
                         ),
                       );
                     }
-
-                    return NoteListView(
-                      notes: _filteredNotes,
-                      onDeleteNote: (note) async {
-                        await _notesService.deleteNotes(documentId: note.documentId);
-                      },
-                      onTap: (note) {
-                        Navigator.of(context).pushNamed(
-                          createOrUpdateNoteRoute,
-                          arguments: note,
-                        );
-                      },
+                    _controller.forward();
+                    return FadeTransition(
+                      opacity: _animation,
+                      child: NoteListView(
+                        notes: _filteredNotes,
+                        onDeleteNote: (note) async {
+                          await _notesService.deleteNotes(
+                              documentId: note.documentId);
+                        },
+                        onTap: (note) {
+                          Navigator.of(context).pushNamed(
+                            createOrUpdateNoteRoute,
+                            arguments: note,
+                          );
+                        },
+                      ),
                     );
                   } else {
                     return const Center(child: CircularProgressIndicator());

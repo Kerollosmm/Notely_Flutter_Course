@@ -42,7 +42,7 @@ class _HeaderSectionState extends State<HeaderSection> {
                         final shouldLogout = await showLogOutDialog(context);
                         if (shouldLogout) {
                           context.read<AuthBloc>().add(
-                            const AuthEventsLogOut(),
+                            const AuthEventLogOut(),
                           );
                         }
                         break;

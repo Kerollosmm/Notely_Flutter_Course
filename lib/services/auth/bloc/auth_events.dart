@@ -1,36 +1,39 @@
-import 'package:flutter/material.dart' show immutable;
+import 'package:flutter/foundation.dart' show immutable;
 
 @immutable
-abstract class AuthEvents {
-  const AuthEvents();
+abstract class AuthEvent {
+  const AuthEvent();
 }
 
-class AuthEventsInitialize extends AuthEvents {
-  const AuthEventsInitialize();
+class AuthEventInitialize extends AuthEvent {
+  const AuthEventInitialize();
 }
 
-class AuthEventsLogIn extends AuthEvents {
+class AuthEventSendEmailVerification extends AuthEvent {
+  const AuthEventSendEmailVerification();
+}
+
+class AuthEventLogIn extends AuthEvent {
   final String email;
   final String password;
-
-  const AuthEventsLogIn(this.email, this.password);
+  const AuthEventLogIn(this.email, this.password);
 }
 
-class AuthEventsLogOut extends AuthEvents {
-  const AuthEventsLogOut();
-}
-
-class AuthEventsRegister extends AuthEvents {
+class AuthEventRegister extends AuthEvent {
   final String email;
   final String password;
-
-  AuthEventsRegister(this.email, this.password);
+  const AuthEventRegister(this.email, this.password);
 }
 
-class AuthEventsSendEmailVerification extends AuthEvents {
-  const AuthEventsSendEmailVerification();
+class AuthEventShouldRegister extends AuthEvent {
+  const AuthEventShouldRegister();
 }
 
-class AuthEventsShouldRegister extends AuthEvents{
-  const AuthEventsShouldRegister();
+class AuthEventForgotPassword extends AuthEvent {
+  final String? email;
+  const AuthEventForgotPassword({this.email});
+}
+
+class AuthEventLogOut extends AuthEvent {
+  const AuthEventLogOut();
 }
