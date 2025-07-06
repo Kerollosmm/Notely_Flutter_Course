@@ -46,7 +46,10 @@ dependencies:
   bloc: ^9.0.0
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
-  flutter_quill: ^11.4.1 # Add flutter_quill dependency
+  flutter_quill: ^11.4.1
+  url_launcher: 
+ 
+
 
 
 

@@ -2,31 +2,35 @@ import 'package:flutter/material.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final String hintText;
 
   const SearchBarWidget({
     Key? key,
     required this.controller,
+    required this.onChanged,
+    this.hintText = 'Search notes...',
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        hintText: 'Search notes',
-        hintStyle: const TextStyle(color: Colors.grey),
-        // Use prefixIcon to place the icon inside the text field
-        prefixIcon: const Icon(Icons.search, color: Colors.grey),
-        // Set the background color
-        fillColor: Colors.grey.shade200,
-        filled: true,
-        // Define the border and make it seamless
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide.none, // No visible border
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        // Removed borderRadius and boxShadow to make it a simple rectangle
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface.withOpacity(0.5), size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
         ),
-        // Adjust padding for better visual spacing
-        contentPadding: const EdgeInsets.symmetric(vertical: 15.0),
       ),
     );
   }

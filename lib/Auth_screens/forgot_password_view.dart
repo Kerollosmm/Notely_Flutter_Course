@@ -5,6 +5,7 @@ import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
 import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/utailates/dialogs/show_reset_password_dialog.dart';
+import 'package:flutter_course_2/widgets/Bottom.dart';
 import 'package:flutter_course_2/widgets/CustomTextField.dart';
 
 class ForgotPasswordView extends StatefulWidget {
@@ -74,16 +75,14 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                       hintText: 'Your email address',
                     ),
                     const SizedBox(height: 16.0),
-                    ElevatedButton(
-                      onPressed: () {
-                        final email = _controller.text;
-                        // Dispatch the forgot password event.
-                        context
-                            .read<AuthBloc>()
-                            .add(AuthEventForgotPassword(email: email));
-                      },
-                      child: const Text('Send me password reset link'),
-                    ),
+                    CustomButton(title: 'Send me password reset link', ontap: () {
+                      // Dispatch the forgot password event with the entered email.
+                      context
+                          .read<AuthBloc>()
+                          .add(AuthEventForgotPassword(email: _controller.text));
+                    }),
+                    const SizedBox(height: 16.0),
+
                     TextButton(
                       onPressed: () {
                         // Dispatch the logout event to return to the login screen.
