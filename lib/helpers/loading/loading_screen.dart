@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/helpers/loading/loading_screen_controler.dart';
-import 'package:path/path.dart';
 
 class LoadingScreen {
   factory LoadingScreen() => _shared;
@@ -88,7 +87,7 @@ class LoadingScreen {
       },
     );
 
-    state?.insert(overlay);
+    state.insert(overlay);
 
     return LoadingScreenController(
       () {

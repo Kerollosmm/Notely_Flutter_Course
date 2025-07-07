@@ -32,7 +32,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     // Using Theme.of(context) to access InputDecorationTheme defined in AppTheme
-    final inputDecorationTheme = Theme.of(context).inputDecorationTheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(

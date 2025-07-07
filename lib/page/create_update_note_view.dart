@@ -14,29 +14,17 @@ class CreateUpdateNoteView extends StatefulWidget {
   _CreateUpdateNoteViewState createState() => _CreateUpdateNoteViewState();
 }
 
-class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
-    with SingleTickerProviderStateMixin {
+class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   CloudNote? _note;
   late final FirebaseCloudStorage _notesService;
   late final quill.QuillController _quillController;
   late final TextEditingController _titleController;
-  late final AnimationController _animationController;
-  late final Animation<double> _animation;
-  bool _isToolbarExpanded = false;
 
   @override
   void initState() {
     _notesService = FirebaseCloudStorage();
     _quillController = quill.QuillController.basic();
     _titleController = TextEditingController();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
     super.initState();
   }
 
@@ -110,183 +98,388 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
     }
   }
 
-  void _toggleToolbar() {
-    setState(() {
-      _isToolbarExpanded = !_isToolbarExpanded;
-    });
-    if (_isToolbarExpanded) {
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
-    }
-  }
-
-  Widget _buildMinimalToolbar() {
+  // Custom Google Keep style toolbar
+  Widget _buildCustomToolbar() {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
-      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Row(
-        children: [
-          // Bold button
-          _buildToolbarButton(
-            icon: Icons.format_bold,
-            onPressed: () => _quillController.formatSelection(quill.Attribute.bold),
-            isActive: _quillController.getSelectionStyle().attributes.containsKey('bold'),
-          ),
-          _buildDivider(),
-          // Italic button
-          _buildToolbarButton(
-            icon: Icons.format_italic,
-            onPressed: () => _quillController.formatSelection(quill.Attribute.italic),
-            isActive: _quillController.getSelectionStyle().attributes.containsKey('italic'),
-          ),
-          _buildDivider(),
-          // Underline button
-          _buildToolbarButton(
-            icon: Icons.format_underlined,
-            onPressed: () => _quillController.formatSelection(quill.Attribute.underline),
-            isActive: _quillController.getSelectionStyle().attributes.containsKey('underline'),
-          ),
-          _buildDivider(),
-          // List button
-          _buildToolbarButton(
-            icon: Icons.format_list_bulleted,
-            onPressed: () => _quillController.formatSelection(quill.Attribute.ul),
-            isActive: _quillController.getSelectionStyle().attributes.containsKey('list'),
-          ),
-          const Spacer(),
-          // Expand button
-          _buildToolbarButton(
-            icon: _isToolbarExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-            onPressed: _toggleToolbar,
-            isActive: false,
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24.0),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Formatting tools
+            _buildToolbarButton(
+              icon: Icons.format_bold,
+              attribute: quill.Attribute.bold,
+              tooltip: 'Bold',
+            ),
+            _buildToolbarButton(
+              icon: Icons.format_italic,
+              attribute: quill.Attribute.italic,
+              tooltip: 'Italic',
+            ),
+            _buildToolbarButton(
+              icon: Icons.format_underlined,
+              attribute: quill.Attribute.underline,
+              tooltip: 'Underline',
+            ),
+            _buildToolbarButton(
+              icon: Icons.strikethrough_s,
+              attribute: quill.Attribute.strikeThrough,
+              tooltip: 'Strikethrough',
+            ),
+            _buildVerticalDivider(),
+            // Text alignment
+            _buildToolbarButton(
+              icon: Icons.format_align_left,
+              attribute: quill.Attribute.leftAlignment,
+              tooltip: 'Align Left',
+            ),
+            _buildToolbarButton(
+              icon: Icons.format_align_center,
+              attribute: quill.Attribute.centerAlignment,
+              tooltip: 'Align Center',
+            ),
+            _buildToolbarButton(
+              icon: Icons.format_align_right,
+              attribute: quill.Attribute.rightAlignment,
+              tooltip: 'Align Right',
+            ),
+            _buildVerticalDivider(),
+            // Lists and checkbox
+            _buildToolbarButton(
+              icon: Icons.format_list_bulleted,
+              attribute: quill.Attribute.ul,
+              tooltip: 'Bullet List',
+            ),
+            _buildToolbarButton(
+              icon: Icons.format_list_numbered,
+              attribute: quill.Attribute.ol,
+              tooltip: 'Numbered List',
+            ),
+            _buildToolbarButton(
+              icon: Icons.check_box_outline_blank,
+              attribute: quill.Attribute.unchecked,
+              tooltip: 'Checkbox',
+            ),
+            _buildVerticalDivider(),
+            // Code and quote
+            _buildToolbarButton(
+              icon: Icons.format_quote,
+              attribute: quill.Attribute.blockQuote,
+              tooltip: 'Quote',
+            ),
+            _buildToolbarButton(
+              icon: Icons.code,
+              attribute: quill.Attribute.codeBlock,
+              tooltip: 'Code Block',
+            ),
+            _buildVerticalDivider(),
+            // Text size
+            _buildToolbarButton(
+              icon: Icons.format_size,
+              attribute: quill.Attribute.h1,
+              tooltip: 'Large Text',
+            ),
+            _buildToolbarButton(
+              icon: Icons.text_fields,
+              attribute: quill.Attribute.h2,
+              tooltip: 'Medium Text',
+            ),
+            _buildVerticalDivider(),
+            // Color picker
+            _buildColorButton(),
+            _buildBackgroundColorButton(),
+            _buildVerticalDivider(),
+            // Clear formatting
+            _buildClearFormattingButton(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildToolbarButton({
     required IconData icon,
-    required VoidCallback onPressed,
-    required bool isActive,
+    required quill.Attribute attribute,
+    required String tooltip,
   }) {
     final theme = Theme.of(context);
+    
+    return AnimatedBuilder(
+      animation: _quillController,
+      builder: (context, child) {
+        final attr = _quillController.getSelectionStyle().attributes[attribute.key];
+        final isActive = attr?.value == attribute.value;
+        
+        return Tooltip(
+          message: tooltip,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20.0),
+              onTap: () {
+                _quillController.formatSelection(attribute);
+              },
+              child: Container(
+                width: 40.0,
+                height: 40.0,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: isActive 
+                    ? theme.colorScheme.primary.withOpacity(0.15)
+                    : Colors.transparent,
+                  border: isActive 
+                    ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3), width: 1)
+                    : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 18.0,
+                  color: isActive 
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    final theme = Theme.of(context);
     return Container(
-      width: 40,
-      height: 40,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 1.0,
+      height: 24.0,
+      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+      color: theme.colorScheme.onSurface.withOpacity(0.2),
+    );
+  }
+
+  Widget _buildColorButton() {
+    final theme = Theme.of(context);
+    
+    return Tooltip(
+      message: 'Text Color',
       child: Material(
-        color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onPressed,
-          child: Icon(
-            icon,
-            size: 20,
-            color: isActive ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
+          borderRadius: BorderRadius.circular(20.0),
+          onTap: () {
+            _showColorPicker(isBackground: false);
+          },
+          child: Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Colors.transparent,
+            ),
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.format_color_text,
+                  size: 18.0,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    width: 12,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      width: 1,
-      height: 20,
-      color: Theme.of(context).dividerColor,
+  Widget _buildBackgroundColorButton() {
+    final theme = Theme.of(context);
+    
+    return Tooltip(
+      message: 'Background Color',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.0),
+          onTap: () {
+            _showColorPicker(isBackground: true);
+          },
+          child: Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Colors.transparent,
+            ),
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.format_color_fill,
+                  size: 18.0,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    width: 12,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.yellow,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildExpandedToolbar() {
+  Widget _buildClearFormattingButton() {
     final theme = Theme.of(context);
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Column(
-          children: [
-            // Header with close button
-            Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'Formatting Tools',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSecondaryContainer,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: _toggleToolbar,
-                    color: theme.colorScheme.onSecondaryContainer,
-                  ),
-                ],
-              ),
+    
+    return Tooltip(
+      message: 'Clear Formatting',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.0),
+          onTap: () {
+            final attrs = {
+              quill.Attribute.bold,
+              quill.Attribute.italic,
+              quill.Attribute.underline,
+              quill.Attribute.strikeThrough,
+              quill.Attribute.h1,
+              quill.Attribute.h2,
+              quill.Attribute.h3,
+              quill.Attribute.ul,
+              quill.Attribute.ol,
+              quill.Attribute.blockQuote,
+              quill.Attribute.codeBlock,
+              quill.Attribute.leftAlignment,
+              quill.Attribute.centerAlignment,
+              quill.Attribute.rightAlignment,
+              quill.Attribute.justifyAlignment,
+              quill.Attribute.color,
+              quill.Attribute.background,
+            };
+            for (final attr in attrs) {
+              _quillController.formatSelection(quill.Attribute.clone(attr, null));
+            }
+          },
+          child: Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Colors.transparent,
             ),
-            // Full QuillSimpleToolbar
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: quill.QuillSimpleToolbar(
-                controller: _quillController,
-                config: const quill.QuillSimpleToolbarConfig(
-                  multiRowsDisplay: false,
-                  showDividers: true,
-                  showFontFamily: false,
-                  showFontSize: false,
-                  showBoldButton: true,
-                  showItalicButton: true,
-                  showSmallButton: false,
-                  showUnderLineButton: true,
-                  showStrikeThrough: true,
-                  showInlineCode: true,
-                  showColorButton: true,
-                  showBackgroundColorButton: true,
-                  showClearFormat: true,
-                  showAlignmentButtons: true,
-                  showLeftAlignment: true,
-                  showCenterAlignment: true,
-                  showRightAlignment: true,
-                  showJustifyAlignment: true,
-                  showHeaderStyle: true,
-                  showListNumbers: true,
-                  showListBullets: true,
-                  showListCheck: true,
-                  showCodeBlock: true,
-                  showIndent: true,
-                  showLink: true,
-                  showUndo: true,
-                  showRedo: true,
-                  showDirection: false,
-                  showSearchButton: false,
-                  
-                ),
-              ),
+            child: Icon(
+              Icons.format_clear,
+              size: 18.0,
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showColorPicker({required bool isBackground}) {
+    final theme = Theme.of(context);
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: theme.colorScheme.surface,
+          title: Text(
+            isBackground ? 'Background Color' : 'Text Color',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+          ),
+          content: SizedBox(
+            width: 250,
+            child: GridView.count(
+              crossAxisCount: 5,
+              shrinkWrap: true,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                Colors.black, Colors.red, Colors.blue, Colors.green, Colors.yellow,
+                Colors.orange, Colors.purple, Colors.pink, Colors.teal, Colors.indigo,
+                Colors.grey, Colors.brown, Colors.cyan, Colors.lime, Colors.amber,
+              ].map((color) => _buildColorOption(color, isBackground)).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel', style: TextStyle(color: theme.colorScheme.primary)),
+            ),
+            TextButton(
+              onPressed: () {
+                // Remove color
+                if (isBackground) {
+                  _quillController.formatSelection(quill.Attribute.clone(quill.Attribute.background, null));
+                } else {
+                  _quillController.formatSelection(quill.Attribute.clone(quill.Attribute.color, null));
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text('Remove', style: TextStyle(color: theme.colorScheme.primary)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildColorOption(Color color, bool isBackground) {
+    return GestureDetector(
+      onTap: () {
+        final hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+        final attribute =
+            isBackground ? quill.Attribute.background : quill.Attribute.color;
+        _quillController.formatSelection(quill.Attribute.clone(attribute, hex));
+        Navigator.of(context).pop();
+      },
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
         ),
       ),
     );
@@ -297,24 +490,26 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
     _deleteNoteIfEmpty();
     _titleController.dispose();
     _quillController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onBackground),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
             onPressed: _shareNote,
-            icon: Icon(Icons.share, color: theme.colorScheme.onSurface),
+            icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
           )
         ],
       ),
@@ -323,10 +518,19 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               _note == null) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: theme.colorScheme.primary,
+              ),
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(color: theme.colorScheme.onBackground),
+              ),
+            );
           }
 
           return Padding(
@@ -338,29 +542,31 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
+                    color: theme.colorScheme.onBackground,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Title',
+                    hintStyle: TextStyle(
+                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                    ),
                     border: InputBorder.none,
+                    filled: true,
+                    fillColor: theme.scaffoldBackgroundColor,
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Toolbar section
-                _isToolbarExpanded ? _buildExpandedToolbar() : _buildMinimalToolbar(),
+                // Custom Google Keep style toolbar
+                Center(child: _buildCustomToolbar()),
                 const SizedBox(height: 16),
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: theme.dividerColor),
+                      color: theme.scaffoldBackgroundColor,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: quill.QuillEditor.basic(
-                        controller: _quillController,
-                        config: const quill.QuillEditorConfig(),
+                    child: quill.QuillEditor.basic(
+                      controller: _quillController,
+                      config: const quill.QuillEditorConfig(
+                        placeholder: 'Start writing...',
                       ),
                     ),
                   ),

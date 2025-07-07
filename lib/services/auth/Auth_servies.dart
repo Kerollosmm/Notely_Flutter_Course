@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_course_2/services/auth/auth_provider.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
 import 'package:flutter_course_2/services/auth/firebase_auth_provider.dart';

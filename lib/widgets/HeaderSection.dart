@@ -1,12 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/enums.dart';
-
-import 'dart:developer' as devTools show log;
-
 import 'package:flutter_course_2/firebase_options.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
 import 'package:flutter_course_2/widgets/MyAlert.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -30,9 +25,6 @@ class _HeaderSectionState extends State<HeaderSection> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-          final User=AuthService.firebase().currentUser;
-           
-
             return AppBar(
               actions: [
                 PopupMenuButton<MenuAction>(
