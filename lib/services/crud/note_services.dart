@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_course_2/extensions/list/filter.dart';
+import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
 import 'package:flutter_course_2/services/crud/crud_exceptions.dart';
 
 import 'package:sqflite/sqflite.dart';
@@ -67,6 +68,7 @@ class NotesService {
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
     required String text,
+    required String title, // Added title parameter
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -79,6 +81,7 @@ class NotesService {
       noteTable,
       {
         textColumn: text,
+        titleColumn: title, // Added title to update map
         isSyncedWithCloudColumn: 0,
       },
       where: 'id = ?',
@@ -88,11 +91,12 @@ class NotesService {
     if (updatesCount == 0) {
       throw CouldNotUpdateNote();
     } else {
-      final updatedNote = await getNote(id: note.id);
-      _notes.removeWhere((note) => note.id == updatedNote.id);
-      _notes.add(updatedNote);
+      // Fetch the updated note to reflect changes
+      final updatedLocalNote = await getNote(id: note.id);
+      _notes.removeWhere((n) => n.id == updatedLocalNote.id);
+      _notes.add(updatedLocalNote);
       _notesStreamController.add(_notes);
-      return updatedNote;
+      return updatedLocalNote;
     }
   }
 
@@ -161,18 +165,21 @@ class NotesService {
     }
 
     const text = '';
+    const title = ''; // Default empty title for new notes
     // create the note
     final noteId = await db.insert(noteTable, {
       userIdColumn: owner.id,
       textColumn: text,
-      isSyncedWithCloudColumn: 1,
+      titleColumn: title, // Add title to insert map
+      isSyncedWithCloudColumn: 0, // New local notes are not synced by default
     });
 
     final note = DatabaseNote(
       id: noteId,
       userId: owner.id,
       text: text,
-      isSyncedWithCloud: true,
+      title: title, // Add title to constructor
+      isSyncedWithCloud: false, // New local notes are not synced by default
     );
 
     _notes.add(note);
@@ -280,6 +287,74 @@ class NotesService {
       throw UnableToGetDocumentsDirectory();
     }
   }
+
+  Future<void> syncNotesWithCloud({required String userId}) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final allLocalNotes = await getAllNotes();
+    final localNotesToSync = allLocalNotes.where((note) => !note.isSyncedWithCloud).toList();
+    if (localNotesToSync.isEmpty) {
+      return; // Nothing to sync
+    }
+
+    final cloudStorage = FirebaseCloudStorage();
+    final db = _getDatabaseOrThrow();
+
+    for (final localNote in localNotesToSync) {
+      try {
+        String? actualCloudDocId = localNote.cloudDocumentId;
+
+        if (actualCloudDocId == null) {
+          // New note: Create in Firebase, then update with content
+          final newCloudNotePlaceholder = await cloudStorage.createNewNote(ownerUserId: userId);
+          actualCloudDocId = newCloudNotePlaceholder.documentId;
+
+          // Now update this new cloud note with local content
+          await cloudStorage.updateNotes(
+            documentId: actualCloudDocId,
+            text: localNote.text,
+            title: localNote.title,
+          );
+        } else {
+          // Existing note, updated offline: Update in Firebase
+          await cloudStorage.updateNotes(
+            documentId: actualCloudDocId,
+            text: localNote.text,
+            title: localNote.title,
+          );
+        }
+
+        // If cloud operations were successful, update local note
+        await db.update(
+          noteTable,
+          {
+            isSyncedWithCloudColumn: 1,
+            cloudDocumentIdColumn: actualCloudDocId, // Store/confirm the cloud ID
+          },
+          where: 'id = ?',
+          whereArgs: [localNote.id],
+        );
+
+        // Update the in-memory cache
+        final index = _notes.indexWhere((note) => note.id == localNote.id);
+        if (index != -1) {
+          _notes[index] = DatabaseNote(
+            id: localNote.id,
+            userId: localNote.userId,
+            text: localNote.text,
+            title: localNote.title,
+            isSyncedWithCloud: true,
+            cloudDocumentId: actualCloudDocId, // Update with the correct cloud ID
+          );
+        }
+      } catch (e) {
+        print('Error syncing note ${localNote.id} to cloud: $e');
+        // Optionally, implement more sophisticated error handling, like retry mechanisms
+        // or leaving the note as unsynced.
+      }
+    }
+    _notesStreamController.add(List.from(_notes)); // Notify listeners
+  }
 }
 
 @immutable
@@ -309,25 +384,30 @@ class DatabaseNote {
   final int id;
   final int userId;
   final String text;
+  final String title;
   final bool isSyncedWithCloud;
+  final String? cloudDocumentId; // Added cloudDocumentId field
 
   DatabaseNote({
     required this.id,
     required this.userId,
     required this.text,
+    required this.title,
     required this.isSyncedWithCloud,
+    this.cloudDocumentId, // Added cloudDocumentId field
   });
 
   DatabaseNote.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
         userId = map[userIdColumn] as int,
         text = map[textColumn] as String,
-        isSyncedWithCloud =
-            (map[isSyncedWithCloudColumn] as int) == 1 ? true : false;
+        title = map[titleColumn] as String? ?? '',
+        isSyncedWithCloud = (map[isSyncedWithCloudColumn] as int) == 1,
+        cloudDocumentId = map[cloudDocumentIdColumn] as String?; // Added cloudDocumentId field
 
   @override
   String toString() =>
-      'Note, ID = $id, userId = $userId, isSyncedWithCloud = $isSyncedWithCloud, text = $text';
+      'Note, ID = $id, userId = $userId, title = $title, isSyncedWithCloud = $isSyncedWithCloud, cloudDocumentId = $cloudDocumentId, text = $text';
 
   @override
   bool operator ==(covariant DatabaseNote other) => id == other.id;
@@ -343,7 +423,10 @@ const idColumn = 'id';
 const emailColumn = 'email';
 const userIdColumn = 'user_id';
 const textColumn = 'text';
+const titleColumn = 'title';
 const isSyncedWithCloudColumn = 'is_synced_with_cloud';
+const cloudDocumentIdColumn = 'cloud_document_id'; // Added cloud document ID column constant
+
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
         "email"	TEXT NOT NULL UNIQUE,
@@ -353,7 +436,9 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "id"	INTEGER NOT NULL,
         "user_id"	INTEGER NOT NULL,
         "text"	TEXT,
+        "title" TEXT NOT NULL DEFAULT '',
         "is_synced_with_cloud"	INTEGER NOT NULL DEFAULT 0,
+        "cloud_document_id" TEXT,
         FOREIGN KEY("user_id") REFERENCES "user"("id"),
         PRIMARY KEY("id" AUTOINCREMENT)
       );''';

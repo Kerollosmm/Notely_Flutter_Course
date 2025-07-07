@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/cloud_storage_constants.dart';
 import 'package:flutter_course_2/services/cloud/cloud_storage_exceptions.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart' show isSyncedWithCloudColumn;
 
 class FirebaseCloudStorage {
   final notes = FirebaseFirestore.instance.collection('notes');
@@ -30,6 +31,7 @@ class FirebaseCloudStorage {
       await notes.doc(documentId).update({
         textFieldName: text,
         titleFieldName: title,
+        isSyncedWithCloudColumn: true, // Mark as synced after update
       });
     } catch (e) {
       throw CouldNotUpdateNoteException();
@@ -54,6 +56,7 @@ class FirebaseCloudStorage {
       ownerFieldUserId: ownerUserId,
       textFieldName: '',
       titleFieldName: '',
+      isSyncedWithCloudColumn: true, // New notes are synced by default
     });
     final fitchNote = await document.get();
     return CloudNote(
@@ -61,6 +64,7 @@ class FirebaseCloudStorage {
       ownerUserId: ownerUserId,
       text: '',
       title: '',
+      isSyncedWithCloud: true,
     );
   }
 

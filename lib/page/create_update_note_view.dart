@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/cloud/cloud_note.dart'; // Still used for argument passing
+import 'package:flutter_course_2/services/crud/note_services.dart'; // Changed to NotesService
 import 'package:flutter_course_2/utailates/generics/get_arguments.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:share_plus/share_plus.dart';
@@ -16,8 +16,9 @@ class CreateUpdateNoteView extends StatefulWidget {
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
     with SingleTickerProviderStateMixin {
-  CloudNote? _note;
-  late final FirebaseCloudStorage _notesService;
+  CloudNote? _receivedCloudNote; // To store the initially received CloudNote (argument)
+  DatabaseNote? _databaseNote;  // To store the local database note representation
+  late final NotesService _notesService; // Changed to NotesService
   late final quill.QuillController _quillController;
   late final TextEditingController _titleController;
   late final AnimationController _animationController;
@@ -26,7 +27,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
 
   @override
   void initState() {
-    _notesService = FirebaseCloudStorage();
+    _notesService = NotesService(); // Initialize NotesService
     _quillController = quill.QuillController.basic();
     _titleController = TextEditingController();
     _animationController = AnimationController(
@@ -41,15 +42,25 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
   }
 
   void _contentControllerListener() async {
-    final note = _note;
-    if (note == null) return;
+    final localNote = _databaseNote;
+    if (localNote == null) {
+      // If _databaseNote is null, it might be a new note not yet saved.
+      // Or we are still in the process of creating/getting it.
+      // We could potentially create it here if both title and text are not empty.
+      // For now, let's assume createOrGetExistingNote handles the initial creation.
+      return;
+    }
     final title = _titleController.text;
     final text = jsonEncode(_quillController.document.toDelta().toJson());
-    await _notesService.updateNotes(
-      documentId: note.documentId,
-      title: title,
+
+    // Update the local database note
+    await _notesService.updateNote(
+      note: localNote, // Pass the DatabaseNote instance
       text: text,
+      title: title,
     );
+    // After updating, we might want to refresh _databaseNote if its state changes (e.g., isSyncedWithCloud)
+    // For now, updateNote in NotesService already updates the cache.
   }
 
   void _setupTextControllerListeners() {
@@ -60,44 +71,60 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
     });
   }
 
-  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
-    final widgetNote = context.getArgument<CloudNote>();
+  Future<DatabaseNote?> createOrGetExistingNote(BuildContext context) async {
+    _receivedCloudNote = context.getArgument<CloudNote>();
 
-    if (widgetNote != null) {
-      _note = widgetNote;
-      _titleController.text = widgetNote.title;
+    if (_receivedCloudNote != null) {
+      // Existing note was passed, try to fetch its local representation
       try {
-        final delta = jsonDecode(widgetNote.text);
-        _quillController.document = quill.Document.fromJson(delta);
+        final localId = int.parse(_receivedCloudNote!.documentId); // documentId is localId as string
+        final existingLocalNote = await _notesService.getNote(id: localId);
+        _databaseNote = existingLocalNote;
+        _titleController.text = existingLocalNote.title;
+        if (existingLocalNote.text.isNotEmpty) {
+          try {
+            final delta = jsonDecode(existingLocalNote.text);
+            _quillController.document = quill.Document.fromJson(delta);
+          } catch (e) {
+            _quillController.document = quill.Document()..insert(0, existingLocalNote.text);
+          }
+        } else {
+           _quillController.document = quill.Document();
+        }
       } catch (e) {
-        _quillController.document = quill.Document()..insert(0, widgetNote.text);
+        // Could not find existing local note or parse ID, treat as new? Or show error?
+        // For now, let's try to create a new one if fetching fails.
+        // This path might indicate an issue with how NoteView sends data.
+        print("Error fetching existing note from local DB: $e. Creating new note instead.");
+        final currentUser = AuthService.firebase().currentUser!;
+        // We need to ensure we have the user in the local DB first
+        final dbUser = await _notesService.getOrCreateUser(email: currentUser.email!);
+        final newLocalNote = await _notesService.createNote(owner: dbUser);
+        _databaseNote = newLocalNote;
+        _titleController.text = newLocalNote.title; // Should be empty
+        _quillController.document = quill.Document(); // Empty document
       }
-      _setupTextControllerListeners();
-      return widgetNote;
+    } else {
+      // No argument passed, create a brand new note
+      final currentUser = AuthService.firebase().currentUser!;
+      final dbUser = await _notesService.getOrCreateUser(email: currentUser.email!);
+      final newLocalNote = await _notesService.createNote(owner: dbUser);
+      _databaseNote = newLocalNote;
+      // Title and text will be empty by default from createNote
+      _titleController.text = newLocalNote.title;
+      _quillController.document = quill.Document();
     }
 
-    final existingNote = _note;
-    if (existingNote != null) {
-      _setupTextControllerListeners();
-      return existingNote;
-    }
-
-    final currentUser = AuthService.firebase().currentUser!;
-    final userId = currentUser.id;
-    final newNote = await _notesService.createNewNote(
-      ownerUserId: userId,
-    );
-    _note = newNote;
     _setupTextControllerListeners();
-    return newNote;
+    return _databaseNote;
   }
 
   void _deleteNoteIfEmpty() {
-    final note = _note;
+    final note = _databaseNote; // Use _databaseNote
     if (_titleController.text.isEmpty &&
         _quillController.document.isEmpty() &&
         note != null) {
-      _notesService.deleteNotes(documentId: note.documentId);
+      _notesService.deleteNote(id: note.id); // Use local delete
     }
   }
 
@@ -318,14 +345,18 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView>
           )
         ],
       ),
-      body: FutureBuilder<CloudNote>(
+      body: FutureBuilder<DatabaseNote?>( // Changed to DatabaseNote?
         future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting &&
-              _note == null) {
+          // Use _databaseNote as the primary source of truth after future completes.
+          // Snapshot.connectionState check can remain for initial loading.
+          if (snapshot.connectionState == ConnectionState.waiting && _databaseNote == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
+
+          // If createOrGetExistingNote resulted in _databaseNote being null (e.g. error not caught inside),
+          // or if snapshot has error.
+          if (_databaseNote == null || snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 

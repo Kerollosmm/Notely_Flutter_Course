@@ -9,6 +9,7 @@ import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
 import 'package:flutter_course_2/notes/search_bar.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -21,7 +22,8 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
-  late final FirebaseCloudStorage _notesService;
+  late final FirebaseCloudStorage _cloudStorageService;
+  late final NotesService _crudNotesService;
   String get userId => AuthService.firebase().currentUser!.id;
 
   final TextEditingController _searchController = TextEditingController();
@@ -33,7 +35,9 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    _notesService = FirebaseCloudStorage();
+    _cloudStorageService = FirebaseCloudStorage();
+    _crudNotesService = NotesService();
+    _crudNotesService.syncNotesWithCloud(userId: userId); // Sync notes on init
     // We no longer need a listener on the controller here,
     // as we'll use the onChanged callback in the SearchBarWidget.
     _controller = AnimationController(
@@ -97,22 +101,29 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: StreamBuilder<Iterable<CloudNote>>(
-                stream: _notesService.allNote(ownerUserId: userId),
+              child: StreamBuilder<List<DatabaseNote>>( // Changed to Stream<List<DatabaseNote>>
+                stream: _crudNotesService.allNotes, // Stream from local CRUD service
                 builder: (context, snapshot) {
-                  // This condition shows a spinner only on the very first load.
-                  if (snapshot.connectionState == ConnectionState.waiting &&
-                      _allNotes.isEmpty) {
+                  if (snapshot.connectionState == ConnectionState.waiting && _allNotes.isEmpty) { // Keep _allNotes for initial load check for now
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
                   if (snapshot.hasData) {
-                    // Update the complete list of notes from the stream.
-                    _allNotes = snapshot.data!.toList();
+                    final localNotes = snapshot.data ?? [];
+                    // Convert DatabaseNote to CloudNote for UI compatibility.
+                    // This is a temporary step. Ideally, NoteListView should accept DatabaseNote or a common interface.
+                    _allNotes = localNotes.map((dbNote) => CloudNote(
+                          documentId: dbNote.id.toString(), // Local DB ID as string
+                          ownerUserId: dbNote.userId.toString(),
+                          text: dbNote.text,
+                          title: dbNote.title, // Use title from DatabaseNote
+                          isSyncedWithCloud: dbNote.isSyncedWithCloud,
+                          cloudDocumentId: dbNote.cloudDocumentId, // Pass the actual cloudDocumentId
+                        )).toList();
 
-                    // Perform filtering locally. This does not call setState and is safe.
+                    // Perform filtering locally.
                     final query = _searchController.text.toLowerCase();
                     final filteredNotes = _allNotes.where((note) {
                       final title = note.title.toLowerCase();
@@ -160,15 +171,33 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
                     return FadeTransition(
                       opacity: _animation,
                       child: NoteListView(
-                        notes: filteredNotes, // Pass the filtered list to the UI.
-                        onDeleteNote: (note) async {
-                          await _notesService.deleteNotes(
-                              documentId: note.documentId);
+                        notes: filteredNotes,
+                        onDeleteNote: (cloudNote) async {
+                          // Delete from local CRUD service using the local ID string from cloudNote.documentId
+                          try {
+                            final localId = int.parse(cloudNote.documentId);
+                            await _crudNotesService.deleteNote(id: localId);
+                          } catch (e) {
+                            print("Error deleting local note with ID ${cloudNote.documentId}: $e");
+                          }
+
+                          // Then, delete from cloud storage if it was synced and has a cloudDocumentId
+                          if (cloudNote.isSyncedWithCloud && cloudNote.cloudDocumentId != null) {
+                            try {
+                              await _cloudStorageService.deleteNotes(documentId: cloudNote.cloudDocumentId!);
+                            } catch (e) {
+                              print("Error deleting cloud note with ID ${cloudNote.cloudDocumentId}: $e");
+                              // Optionally, handle cloud deletion failure (e.g., mark for later deletion)
+                            }
+                          }
                         },
-                        onTap: (note) {
+                        onTap: (cloudNote) {
+                          // When tapping, we still pass the CloudNote that has local ID in documentId
+                          // and actual cloud ID (if any) in cloudDocumentId.
+                          // CreateUpdateNoteView uses cloudNote.documentId (local ID) to fetch from local DB.
                           Navigator.of(context).pushNamed(
                             createOrUpdateNoteRoute,
-                            arguments: note,
+                            arguments: cloudNote,
                           );
                         },
                       ),

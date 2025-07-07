@@ -103,6 +103,12 @@ class NoteListView extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(width: 8.0), // Add some spacing before the icon
+                Icon(
+                  note.isSyncedWithCloud ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
+                  color: note.isSyncedWithCloud ? Colors.green : Colors.grey,
+                  size: 20.0,
+                ),
               ],
             ),
           ),
