@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_course_2/enums/sync_status.dart';
 import 'package:flutter_course_2/extensions/list/filter.dart';
 import 'package:flutter_course_2/services/crud/crud_exceptions.dart';
 
@@ -26,6 +27,8 @@ class NotesService {
   factory NotesService() => _shared;
 
   late final StreamController<List<DatabaseNote>> _notesStreamController;
+
+  DatabaseUser? get currentUser => _user;
 
   Stream<List<DatabaseNote>> get allNotes =>
       _notesStreamController.stream.filter((note) {
@@ -58,6 +61,24 @@ class NotesService {
     }
   }
 
+  Future<DatabaseUser> setFirebaseUid({
+    required String email,
+    required String firebaseUid,
+  }) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final user = await getUser(email: email);
+
+    await db.update(
+      userTable,
+      {firebaseUidColumn: firebaseUid},
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+
+    return await getUser(email: email);
+  }
+
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
     _notes = allNotes.toList();
@@ -66,7 +87,10 @@ class NotesService {
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
-    required String text,
+    String? text,
+    String? title,
+    SyncStatus? syncStatus,
+    String? remoteId,
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -74,13 +98,19 @@ class NotesService {
     // make sure note exists
     await getNote(id: note.id);
 
+    final Map<String, dynamic> updates = {};
+    if (text != null) updates[textColumn] = text;
+    if (title != null) updates[titleColumn] = title;
+    if (syncStatus != null) updates[syncStatusColumn] = syncStatus.index;
+    if (remoteId != null) updates[remoteIdColumn] = remoteId;
+
+    // Always update last modified
+    updates[lastModifiedColumn] = DateTime.now().millisecondsSinceEpoch;
+
     // update DB
     final updatesCount = await db.update(
       noteTable,
-      {
-        textColumn: text,
-        isSyncedWithCloudColumn: 0,
-      },
+      updates,
       where: 'id = ?',
       whereArgs: [note.id],
     );
@@ -161,18 +191,23 @@ class NotesService {
     }
 
     const text = '';
+    const title = '';
     // create the note
     final noteId = await db.insert(noteTable, {
       userIdColumn: owner.id,
       textColumn: text,
-      isSyncedWithCloudColumn: 1,
+      titleColumn: title,
+      syncStatusColumn: SyncStatus.dirty.index, // Created locally, so dirty
+      lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
     });
 
     final note = DatabaseNote(
       id: noteId,
       userId: owner.id,
       text: text,
-      isSyncedWithCloud: true,
+      title: title,
+      syncStatus: SyncStatus.dirty,
+      lastModified: DateTime.now().millisecondsSinceEpoch,
     );
 
     _notes.add(note);
@@ -269,12 +304,49 @@ class NotesService {
     try {
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, dbName);
-      final db = await openDatabase(dbPath);
+      final db = await openDatabase(
+        dbPath,
+        version: 2, // Increment version for migration
+        onUpgrade: (db, oldVersion, newVersion) async {
+          if (oldVersion < 2) {
+            // Migration logic
+
+            // Add firebase_uid to user table
+            try {
+              await db.execute('ALTER TABLE user ADD COLUMN firebase_uid TEXT');
+            } catch (e) {
+              // Ignore if exists
+            }
+
+            // Add columns to note table
+            try {
+               await db.execute('ALTER TABLE note ADD COLUMN title TEXT DEFAULT ""');
+            } catch (e) { /* ignore */ }
+
+            try {
+               await db.execute('ALTER TABLE note ADD COLUMN sync_status INTEGER NOT NULL DEFAULT 0');
+            } catch (e) { /* ignore */ }
+
+            try {
+               await db.execute('ALTER TABLE note ADD COLUMN remote_id TEXT');
+            } catch (e) { /* ignore */ }
+
+            try {
+               await db.execute('ALTER TABLE note ADD COLUMN last_modified INTEGER NOT NULL DEFAULT 0');
+            } catch (e) { /* ignore */ }
+
+            // Remove is_synced_with_cloud column if you want, but SQLite doesn't support DROP COLUMN easily.
+            // We can just ignore it.
+          }
+        },
+        onCreate: (db, version) async {
+             // create the user table
+            await db.execute(createUserTable);
+            // create note table
+            await db.execute(createNoteTable);
+        }
+      );
       _db = db;
-      // create the user table
-      await db.execute(createUserTable);
-      // create note table
-      await db.execute(createNoteTable);
       await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectory();
@@ -286,17 +358,20 @@ class NotesService {
 class DatabaseUser {
   final int id;
   final String email;
+  final String? firebaseUid;
   const DatabaseUser({
     required this.id,
     required this.email,
+    this.firebaseUid,
   });
 
   DatabaseUser.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
-        email = map[emailColumn] as String;
+        email = map[emailColumn] as String,
+        firebaseUid = map[firebaseUidColumn] as String?;
 
   @override
-  String toString() => 'Person, ID = $id, email = $email';
+  String toString() => 'Person, ID = $id, email = $email, firebaseUid = $firebaseUid';
 
   @override
   bool operator ==(covariant DatabaseUser other) => id == other.id;
@@ -309,25 +384,33 @@ class DatabaseNote {
   final int id;
   final int userId;
   final String text;
-  final bool isSyncedWithCloud;
+  final String title;
+  final SyncStatus syncStatus;
+  final String? remoteId;
+  final int lastModified;
 
   DatabaseNote({
     required this.id,
     required this.userId,
     required this.text,
-    required this.isSyncedWithCloud,
+    required this.title,
+    required this.syncStatus,
+    this.remoteId,
+    required this.lastModified,
   });
 
   DatabaseNote.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
         userId = map[userIdColumn] as int,
         text = map[textColumn] as String,
-        isSyncedWithCloud =
-            (map[isSyncedWithCloudColumn] as int) == 1 ? true : false;
+        title = (map[titleColumn] as String?) ?? '',
+        syncStatus = SyncStatus.values[map[syncStatusColumn] as int],
+        remoteId = map[remoteIdColumn] as String?,
+        lastModified = map[lastModifiedColumn] as int;
 
   @override
   String toString() =>
-      'Note, ID = $id, userId = $userId, isSyncedWithCloud = $isSyncedWithCloud, text = $text';
+      'Note, ID = $id, userId = $userId, syncStatus = $syncStatus, text = $text, title = $title, remoteId = $remoteId, lastModified = $lastModified';
 
   @override
   bool operator ==(covariant DatabaseNote other) => id == other.id;
@@ -341,19 +424,29 @@ const noteTable = 'note';
 const userTable = 'user';
 const idColumn = 'id';
 const emailColumn = 'email';
+const firebaseUidColumn = 'firebase_uid';
 const userIdColumn = 'user_id';
 const textColumn = 'text';
-const isSyncedWithCloudColumn = 'is_synced_with_cloud';
+const titleColumn = 'title';
+const syncStatusColumn = 'sync_status';
+const remoteIdColumn = 'remote_id';
+const lastModifiedColumn = 'last_modified';
+
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
         "email"	TEXT NOT NULL UNIQUE,
+        "firebase_uid" TEXT,
         PRIMARY KEY("id" AUTOINCREMENT)
       );''';
+// I will drop the old table if it exists to force schema update for this task since I don't have versioning logic
 const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "id"	INTEGER NOT NULL,
         "user_id"	INTEGER NOT NULL,
         "text"	TEXT,
-        "is_synced_with_cloud"	INTEGER NOT NULL DEFAULT 0,
+        "title" TEXT,
+        "sync_status"	INTEGER NOT NULL DEFAULT 0,
+        "remote_id" TEXT,
+        "last_modified" INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY("user_id") REFERENCES "user"("id"),
         PRIMARY KEY("id" AUTOINCREMENT)
       );''';

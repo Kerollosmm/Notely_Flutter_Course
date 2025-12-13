@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_course_2/repositories/note_repository.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/utailates/generics/get_arguments.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:share_plus/share_plus.dart';
@@ -15,14 +16,20 @@ class CreateUpdateNoteView extends StatefulWidget {
 }
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
-  CloudNote? _note;
-  late final FirebaseCloudStorage _notesService;
+  DatabaseNote? _note;
+  late final NoteRepository _noteRepository;
   late final quill.QuillController _quillController;
   late final TextEditingController _titleController;
+  late final NotesService _localService;
 
   @override
   void initState() {
-    _notesService = FirebaseCloudStorage();
+    _localService = NotesService();
+    // Ideally Repository should be provided via DI (Bloc/Provider), but for now initializing here as requested to minimize structure changes
+    _noteRepository = NoteRepository(
+      localService: _localService,
+      remoteService: FirebaseCloudStorage()
+    );
     _quillController = quill.QuillController.basic();
     _titleController = TextEditingController();
     super.initState();
@@ -33,8 +40,8 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     if (note == null) return;
     final title = _titleController.text;
     final text = jsonEncode(_quillController.document.toDelta().toJson());
-    await _notesService.updateNotes(
-      documentId: note.documentId,
+    await _noteRepository.updateNote(
+      note: note,
       title: title,
       text: text,
     );
@@ -48,8 +55,8 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     });
   }
 
-  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
-    final widgetNote = context.getArgument<CloudNote>();
+  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+    final widgetNote = context.getArgument<DatabaseNote>();
 
     if (widgetNote != null) {
       _note = widgetNote;
@@ -58,6 +65,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
         final delta = jsonDecode(widgetNote.text);
         _quillController.document = quill.Document.fromJson(delta);
       } catch (e) {
+        // Fallback for plain text or empty
         _quillController.document = quill.Document()..insert(0, widgetNote.text);
       }
       _setupTextControllerListeners();
@@ -71,10 +79,16 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     }
 
     final currentUser = AuthService.firebase().currentUser!;
-    final userId = currentUser.id;
-    final newNote = await _notesService.createNewNote(
-      ownerUserId: userId,
-    );
+    // Get local user mapping
+    final owner = await _localService.getOrCreateUser(email: currentUser.email);
+    // Ensure firebaseUid is set
+    if (owner.firebaseUid == null) {
+      await _localService.setFirebaseUid(email: currentUser.email, firebaseUid: currentUser.id);
+    }
+
+    // Create new note
+    final newNote = await _noteRepository.createNote(owner: owner);
+
     _note = newNote;
     _setupTextControllerListeners();
     return newNote;
@@ -85,7 +99,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     if (_titleController.text.isEmpty &&
         _quillController.document.isEmpty() &&
         note != null) {
-      _notesService.deleteNotes(documentId: note.documentId);
+      _noteRepository.deleteNote(id: note.id);
     }
   }
 
@@ -98,35 +112,68 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     }
   }
 
+  // Collapsible toolbar state
+  bool _isToolbarExpanded = false;
+
   // Custom Google Keep style toolbar
   Widget _buildCustomToolbar() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24.0),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
-            blurRadius: 8.0,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Formatting tools
-            _buildToolbarButton(
-              icon: Icons.format_bold,
-              attribute: quill.Attribute.bold,
-              tooltip: 'Bold',
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isToolbarExpanded = !_isToolbarExpanded;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              shape: BoxShape.circle,
+               boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
+                  blurRadius: 4.0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
+            child: Icon(
+              _isToolbarExpanded ? Icons.close : Icons.format_paint,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ),
+        if (_isToolbarExpanded)
+          Container(
+            margin: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(24.0),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
+                  blurRadius: 8.0,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Formatting tools
+                  _buildToolbarButton(
+                    icon: Icons.format_bold,
+                    attribute: quill.Attribute.bold,
+                    tooltip: 'Bold',
+                  ),
             _buildToolbarButton(
               icon: Icons.format_italic,
               attribute: quill.Attribute.italic,
@@ -210,6 +257,8 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
           ],
         ),
       ),
+    ),
+    ],
     );
   }
 
@@ -513,7 +562,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
           )
         ],
       ),
-      body: FutureBuilder<CloudNote>(
+      body: FutureBuilder<DatabaseNote>(
         future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
