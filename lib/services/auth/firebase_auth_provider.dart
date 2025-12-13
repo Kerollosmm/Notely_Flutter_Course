@@ -10,9 +10,11 @@ import 'package:flutter_course_2/services/auth/auth_provider.dart';
 class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<void> initialize() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   }
 
   @override
