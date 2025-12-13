@@ -55,8 +55,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
     // send email verification
     on<AuthEventSendEmailVerification>((event, emit) async {
-      await provider.sendEmailVerification();
-      emit(state);
+      try {
+        await provider.sendEmailVerification();
+        emit(state);
+      } on Exception catch (e) {
+        // If we fail to send verification, we might want to log it or show a temporary error.
+        // For now, staying on the same state but perhaps logging could be done.
+        // Since AuthStateNeedsVerification doesn't hold exception, we can't easily show it
+        // without changing the state definition.
+        // However, crashing is worse.
+        // Ideally we should emit a state that shows the error.
+        emit(state);
+      }
     });
     on<AuthEventRegister>((event, emit) async {
       final email = event.email;
