@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/utailates/dialogs/delete_dialog.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
-typedef NoteCallback = void Function(CloudNote note);
+typedef NoteCallback = void Function(DatabaseNote note);
 
 class NoteListView extends StatelessWidget {
-  final List<CloudNote> notes;
+  final List<DatabaseNote> notes;
   final NoteCallback onDeleteNote;
   final NoteCallback onTap;
 
@@ -41,6 +41,7 @@ class NoteListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final note = notes[index];
         final plainText = _getPlainText(note.text);
+        final title = note.title.isNotEmpty ? note.title : 'Untitled Note';
 
         return GestureDetector(
           onTap: () => onTap(note),
@@ -81,7 +82,7 @@ class NoteListView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        note.title.isEmpty ? "Untitled Note" : note.title,
+                        title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -100,6 +101,11 @@ class NoteListView extends StatelessWidget {
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
+                      if (note.syncStatus != 1)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Icon(Icons.cloud_upload, size: 12, color: Colors.orange),
+                        )
                     ],
                   ),
                 ),

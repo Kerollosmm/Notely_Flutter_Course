@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_course_2/repositories/note_repository.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/utailates/generics/get_arguments.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:share_plus/share_plus.dart';
@@ -15,14 +15,15 @@ class CreateUpdateNoteView extends StatefulWidget {
 }
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
-  CloudNote? _note;
-  late final FirebaseCloudStorage _notesService;
+  DatabaseNote? _note;
+  late final NoteRepository _noteRepository;
   late final quill.QuillController _quillController;
   late final TextEditingController _titleController;
+  bool _isDisposed = false;
 
   @override
   void initState() {
-    _notesService = FirebaseCloudStorage();
+    _noteRepository = NoteRepository();
     _quillController = quill.QuillController.basic();
     _titleController = TextEditingController();
     super.initState();
@@ -30,11 +31,11 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
   void _contentControllerListener() async {
     final note = _note;
-    if (note == null) return;
+    if (note == null || _isDisposed) return;
     final title = _titleController.text;
     final text = jsonEncode(_quillController.document.toDelta().toJson());
-    await _notesService.updateNotes(
-      documentId: note.documentId,
+    await _noteRepository.updateNote(
+      note: note,
       title: title,
       text: text,
     );
@@ -48,8 +49,8 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     });
   }
 
-  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
-    final widgetNote = context.getArgument<CloudNote>();
+  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+    final widgetNote = context.getArgument<DatabaseNote>();
 
     if (widgetNote != null) {
       _note = widgetNote;
@@ -58,6 +59,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
         final delta = jsonDecode(widgetNote.text);
         _quillController.document = quill.Document.fromJson(delta);
       } catch (e) {
+        // Fallback for plain text if any
         _quillController.document = quill.Document()..insert(0, widgetNote.text);
       }
       _setupTextControllerListeners();
@@ -66,15 +68,12 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
     final existingNote = _note;
     if (existingNote != null) {
-      _setupTextControllerListeners();
       return existingNote;
     }
 
     final currentUser = AuthService.firebase().currentUser!;
-    final userId = currentUser.id;
-    final newNote = await _notesService.createNewNote(
-      ownerUserId: userId,
-    );
+    final email = currentUser.email;
+    final newNote = await _noteRepository.createNote(userEmail: email);
     _note = newNote;
     _setupTextControllerListeners();
     return newNote;
@@ -85,7 +84,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     if (_titleController.text.isEmpty &&
         _quillController.document.isEmpty() &&
         note != null) {
-      _notesService.deleteNotes(documentId: note.documentId);
+      _noteRepository.deleteNote(note: note);
     }
   }
 
@@ -487,6 +486,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _deleteNoteIfEmpty();
     _titleController.dispose();
     _quillController.dispose();
@@ -513,7 +513,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
           )
         ],
       ),
-      body: FutureBuilder<CloudNote>(
+      body: FutureBuilder<DatabaseNote>(
         future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
