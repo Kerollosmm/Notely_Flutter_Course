@@ -1,15 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart' show ReadContext;
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/page/setting_screen.dart';
+import 'package:flutter_course_2/repositories/note_repository.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
-import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/sync/sync_service.dart';
 import 'package:flutter_course_2/notes/search_bar.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 
@@ -21,21 +18,25 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
-  late final FirebaseCloudStorage _notesService;
+  late final NoteRepository _noteRepository;
+  late final SyncService _syncService;
+  String get userEmail => AuthService.firebase().currentUser!.email;
   String get userId => AuthService.firebase().currentUser!.id;
 
   final TextEditingController _searchController = TextEditingController();
   // _allNotes is kept to help manage the initial loading indicator state.
-  List<CloudNote> _allNotes = [];
+  List<DatabaseNote> _allNotes = [];
 
   late final AnimationController _controller;
   late final Animation<double> _animation;
 
   @override
   void initState() {
-    _notesService = FirebaseCloudStorage();
-    // We no longer need a listener on the controller here,
-    // as we'll use the onChanged callback in the SearchBarWidget.
+    _noteRepository = NoteRepository();
+    _syncService = SyncService();
+    // Initialize repository and sync
+    _initRepositoryAndSync();
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -47,10 +48,16 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
     super.initState();
   }
 
-  // The _filterNotes method is no longer needed because filtering will happen inside the build method.
+  Future<void> _initRepositoryAndSync() async {
+    await _noteRepository.init(userEmail);
+    _syncService.startSyncLoop(userEmail, userId);
+    // Trigger an initial sync
+    _syncService.syncNow(userEmail, userId);
+  }
 
   @override
   void dispose() {
+    _syncService.stopSyncLoop();
     _searchController.dispose();
     _controller.dispose();
     super.dispose();
@@ -74,7 +81,12 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
             },
             icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
           ),
-         
+          IconButton(
+             icon: Icon(Icons.sync, color: theme.colorScheme.onSurface),
+             onPressed: () {
+               _syncService.syncNow(userEmail, userId);
+             },
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -97,8 +109,8 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: StreamBuilder<Iterable<CloudNote>>(
-                stream: _notesService.allNote(ownerUserId: userId),
+              child: StreamBuilder<List<DatabaseNote>>(
+                stream: _noteRepository.allNotes,
                 builder: (context, snapshot) {
                   // This condition shows a spinner only on the very first load.
                   if (snapshot.connectionState == ConnectionState.waiting &&
@@ -162,8 +174,8 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
                       child: NoteListView(
                         notes: filteredNotes, // Pass the filtered list to the UI.
                         onDeleteNote: (note) async {
-                          await _notesService.deleteNotes(
-                              documentId: note.documentId);
+                          await _noteRepository.deleteNote(
+                              note: note);
                         },
                         onTap: (note) {
                           Navigator.of(context).pushNamed(
