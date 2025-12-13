@@ -67,6 +67,8 @@ class NotesService {
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
     required String text,
+    int? syncStatus, // Optional: Update sync status
+    String? remoteId, // Optional: Update remote ID
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -74,13 +76,22 @@ class NotesService {
     // make sure note exists
     await getNote(id: note.id);
 
+    final updates = {
+      textColumn: text,
+      lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
+    };
+
+    // Default to dirty if not specified
+    updates[syncStatusColumn] = syncStatus ?? 2; // 2 = Dirty
+
+    if (remoteId != null) {
+      updates[remoteIdColumn] = remoteId;
+    }
+
     // update DB
     final updatesCount = await db.update(
       noteTable,
-      {
-        textColumn: text,
-        isSyncedWithCloudColumn: 0,
-      },
+      updates,
       where: 'id = ?',
       whereArgs: [note.id],
     );
@@ -99,9 +110,22 @@ class NotesService {
   Future<Iterable<DatabaseNote>> getAllNotes() async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    final notes = await db.query(noteTable);
+    // Only return notes that are not locally deleted (status 3)
+    final notes = await db.query(
+      noteTable,
+      where: '$syncStatusColumn != ?',
+      whereArgs: [3]
+    );
 
     return notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
+  }
+
+  // Method to get ALL notes including deleted ones (for sync service)
+  Future<Iterable<DatabaseNote>> getAllNotesForSync() async {
+      await _ensureDbIsOpen();
+      final db = _getDatabaseOrThrow();
+      final notes = await db.query(noteTable);
+      return notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
   }
 
   Future<DatabaseNote> getNote({required int id}) async {
@@ -134,20 +158,45 @@ class NotesService {
     return numberOfDeletions;
   }
 
+  // Soft delete for sync
   Future<void> deleteNote({required int id}) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    final deletedCount = await db.delete(
+
+    // Update to deleted_locally status (3)
+    final deletedCount = await db.update(
       noteTable,
+      {
+        syncStatusColumn: 3,
+        lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );
+
     if (deletedCount == 0) {
       throw CouldNotDeleteNote();
     } else {
       _notes.removeWhere((note) => note.id == id);
       _notesStreamController.add(_notes);
     }
+  }
+
+  // Hard delete (for cleanup after sync)
+  Future<void> hardDeleteNote({required int id}) async {
+      await _ensureDbIsOpen();
+      final db = _getDatabaseOrThrow();
+      final deletedCount = await db.delete(
+          noteTable,
+          where: 'id = ?',
+          whereArgs: [id],
+      );
+      if (deletedCount == 0) {
+          // It might have been already deleted
+      } else {
+          _notes.removeWhere((note) => note.id == id);
+          _notesStreamController.add(_notes);
+      }
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
@@ -165,20 +214,52 @@ class NotesService {
     final noteId = await db.insert(noteTable, {
       userIdColumn: owner.id,
       textColumn: text,
-      isSyncedWithCloudColumn: 1,
+      syncStatusColumn: 2, // 2 = Dirty (created locally)
+      lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
     });
 
     final note = DatabaseNote(
       id: noteId,
       userId: owner.id,
       text: text,
-      isSyncedWithCloud: true,
+      syncStatus: 2,
+      lastModified: DateTime.now().millisecondsSinceEpoch,
     );
 
     _notes.add(note);
     _notesStreamController.add(_notes);
 
     return note;
+  }
+
+  Future<void> updateNoteSyncStatus({required int id, required int status, String? remoteId}) async {
+      await _ensureDbIsOpen();
+      final db = _getDatabaseOrThrow();
+
+      final Map<String, dynamic> updates = {
+          syncStatusColumn: status,
+      };
+
+      if (remoteId != null) {
+          updates[remoteIdColumn] = remoteId;
+      }
+
+      await db.update(
+          noteTable,
+          updates,
+          where: 'id = ?',
+          whereArgs: [id],
+      );
+
+      // Update cache
+      try {
+        final note = await getNote(id: id);
+        _notes.removeWhere((n) => n.id == id);
+        _notes.add(note);
+        _notesStreamController.add(_notes);
+      } catch (e) {
+        // Note might be hard deleted or not found
+      }
   }
 
   Future<DatabaseUser> getUser({required String email}) async {
@@ -309,25 +390,30 @@ class DatabaseNote {
   final int id;
   final int userId;
   final String text;
-  final bool isSyncedWithCloud;
+  final int syncStatus; // 1: Synced, 2: Dirty, 3: Deleted Locally
+  final String? remoteId;
+  final int lastModified;
 
   DatabaseNote({
     required this.id,
     required this.userId,
     required this.text,
-    required this.isSyncedWithCloud,
+    required this.syncStatus,
+    this.remoteId,
+    required this.lastModified,
   });
 
   DatabaseNote.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
         userId = map[userIdColumn] as int,
         text = map[textColumn] as String,
-        isSyncedWithCloud =
-            (map[isSyncedWithCloudColumn] as int) == 1 ? true : false;
+        syncStatus = map[syncStatusColumn] as int? ?? 1,
+        remoteId = map[remoteIdColumn] as String?,
+        lastModified = map[lastModifiedColumn] as int? ?? 0;
 
   @override
   String toString() =>
-      'Note, ID = $id, userId = $userId, isSyncedWithCloud = $isSyncedWithCloud, text = $text';
+      'Note, ID = $id, userId = $userId, syncStatus = $syncStatus, remoteId = $remoteId, text = $text';
 
   @override
   bool operator ==(covariant DatabaseNote other) => id == other.id;
@@ -336,14 +422,17 @@ class DatabaseNote {
   int get hashCode => id.hashCode;
 }
 
-const dbName = 'notes.db';
+const dbName = 'notes_v2.db'; // Changed to avoid conflicts with old schema
 const noteTable = 'note';
 const userTable = 'user';
 const idColumn = 'id';
 const emailColumn = 'email';
 const userIdColumn = 'user_id';
 const textColumn = 'text';
-const isSyncedWithCloudColumn = 'is_synced_with_cloud';
+const syncStatusColumn = 'sync_status';
+const remoteIdColumn = 'remote_id';
+const lastModifiedColumn = 'last_modified';
+
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
         "email"	TEXT NOT NULL UNIQUE,
@@ -353,7 +442,9 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "id"	INTEGER NOT NULL,
         "user_id"	INTEGER NOT NULL,
         "text"	TEXT,
-        "is_synced_with_cloud"	INTEGER NOT NULL DEFAULT 0,
+        "sync_status"	INTEGER NOT NULL DEFAULT 2,
+        "remote_id"	TEXT UNIQUE,
+        "last_modified"	INTEGER,
         FOREIGN KEY("user_id") REFERENCES "user"("id"),
         PRIMARY KEY("id" AUTOINCREMENT)
       );''';
