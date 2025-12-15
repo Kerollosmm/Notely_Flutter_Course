@@ -12,8 +12,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_course_2/providers/theme_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-// This import was causing an error because the package wasn't installed. We'll remove it for now and handle dependencies properly.
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
   // Ensure that the Flutter bindings are initialized before calling Firebase.
@@ -31,38 +30,49 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(FirebaseAuthProvider())..add(const AuthEventInitialize()),
+          create: (context) =>
+              AuthBloc(FirebaseAuthProvider())
+                ..add(const AuthEventInitialize()),
         ),
-        ChangeNotifierProvider(
-          create: (_) => ThemeNotifier(ThemeMode.system),
-        ),
+        ChangeNotifierProvider(create: (_) => ThemeNotifier(ThemeMode.system)),
       ],
-      child: Consumer<ThemeNotifier>(
-        builder: (context, themeNotifier, child) {
-          return MaterialApp(
-            title: 'Flutter Demo',
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-              FlutterQuillLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en'), // English
-              Locale('ar'), // Add this line for Arabic
-            ],
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeNotifier.themeMode,
-            // The home widget now has access to the AuthBloc.
-            home: const AccountAnalyze(),
-            // All named routes will also have access to the AuthBloc.
-            routes: {
-              createOrUpdateNoteRoute: (context) => const CreateUpdateNoteView(),
-            },
-          );
-        },
+      // ScreenUtilInit MUST wrap the entire app for responsive sizing
+      child: ScreenUtilInit(
+        // Design size based on Figma/XD (iPhone X default: 375x812)
+        designSize: const Size(375, 812),
+        // Adapts text size to screen density
+        minTextAdapt: true,
+        // Enables tablet/large screen support
+        splitScreenMode: true,
+        // The builder ensures ScreenUtil is initialized BEFORE MaterialApp builds
+        builder: (context, child) => Consumer<ThemeNotifier>(
+          builder: (context, themeNotifier, child) {
+            return MaterialApp(
+              title: 'Flutter Demo',
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                FlutterQuillLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('en'), // English
+                Locale('ar'), // Arabic
+              ],
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeNotifier.themeMode,
+              // The home widget now has access to the AuthBloc.
+              home: const AccountAnalyze(),
+              // All named routes will also have access to the AuthBloc.
+              routes: {
+                createOrUpdateNoteRoute: (context) =>
+                    const CreateUpdateNoteView(),
+              },
+            );
+          },
+        ),
       ),
     );
   }

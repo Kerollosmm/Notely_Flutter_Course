@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -42,29 +39,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'dummy_web_api_key',
-    appId: 'dummy_web_app_id',
-    messagingSenderId: 'dummy_messaging_sender_id',
-    projectId: 'dummy_project_id',
-    authDomain: 'dummy_auth_domain',
-    storageBucket: 'dummy_storage_bucket',
+    apiKey: 'AIzaSyBOBiCZ-to7VVio7CAntqwIRfPIhiZgKZg',
+    appId: '1:1042612043664:web:ae2ba268e28fdfb367fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    authDomain: 'notely-7fcda.firebaseapp.com',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    measurementId: 'G-MENF8EKM0Y',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'dummy_android_api_key',
-    appId: 'dummy_android_app_id',
-    messagingSenderId: 'dummy_messaging_sender_id',
-    projectId: 'dummy_project_id',
-    storageBucket: 'dummy_storage_bucket',
+    apiKey: 'AIzaSyB6NLZbDbmijSlv12cil2ayxPPTrC31oWg',
+    appId: '1:1042612043664:android:280418f3d2fce5cf67fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'dummy_ios_api_key',
-    appId: 'dummy_ios_app_id',
-    messagingSenderId: 'dummy_messaging_sender_id',
-    projectId: 'dummy_project_id',
-    storageBucket: 'dummy_storage_bucket',
-    iosBundleId: 'com.example.app',
+    apiKey: 'AIzaSyCruzVCUUn-T5K-2J0O1hAfSrQCIpb00Rg',
+    appId: '1:1042612043664:ios:5638b67c4ecc614667fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    iosBundleId: 'com.example.flutterCourse2',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -75,4 +73,15 @@ class DefaultFirebaseOptions {
     storageBucket: 'dummy_storage_bucket',
     iosBundleId: 'com.example.app',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBOBiCZ-to7VVio7CAntqwIRfPIhiZgKZg',
+    appId: '1:1042612043664:web:decfdf96cd8baa0a67fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    authDomain: 'notely-7fcda.firebaseapp.com',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    measurementId: 'G-MSVVG6GPWK',
+  );
+
 }
