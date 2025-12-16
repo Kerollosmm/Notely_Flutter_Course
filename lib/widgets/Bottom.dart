@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomButton extends StatelessWidget {
   final String title;
@@ -30,9 +31,9 @@ class CustomButton extends StatelessWidget {
       foregroundColor: Colors.white, // White text for good contrast
       shape: const StadiumBorder(), // This creates the fully rounded "pill" shape
       elevation: 0, // No shadow, for a flatter look like in the image
-      textStyle: const TextStyle(
+      textStyle: TextStyle(
         fontWeight: FontWeight.bold,
-        fontSize: 16,
+        fontSize: 16.sp,
       ),
     );
 
@@ -43,10 +44,10 @@ class CustomButton extends StatelessWidget {
     // Define overrides from the widget's constructor parameters.
     // This allows for specific overrides on a per-button basis.
     final ButtonStyle overrideStyle = ButtonStyle(
-      backgroundColor: backgroundColor != null ? MaterialStateProperty.all(backgroundColor) : null,
-      foregroundColor: textColor != null ? MaterialStateProperty.all(textColor) : null,
+      backgroundColor: backgroundColor != null ? WidgetStateProperty.all(backgroundColor) : null,
+      foregroundColor: textColor != null ? WidgetStateProperty.all(textColor) : null,
       fixedSize: (width != null || height != null)
-          ? MaterialStateProperty.all(Size(width ?? double.infinity, height ?? 48))
+          ? WidgetStateProperty.all(Size(width ?? double.infinity, height ?? 48.h))
           : null,
     );
 
@@ -58,7 +59,7 @@ class CustomButton extends StatelessWidget {
 
     return SizedBox(
       width: width ?? double.infinity, // Use provided width or expand to fill
-      height: height ?? 48, // Use provided height or default to 48
+      height: height ?? 48.h, // Use provided height or default to 48
       child: ElevatedButton(
         onPressed: () {
           HapticFeedback.mediumImpact();
@@ -70,7 +71,7 @@ class CustomButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   icon!,
-                  const SizedBox(width: 8), // Space between icon and text
+                  SizedBox(width: 8.w), // Space between icon and text
                   Text(title),
                 ],
               )

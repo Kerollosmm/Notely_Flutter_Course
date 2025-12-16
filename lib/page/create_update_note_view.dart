@@ -5,10 +5,11 @@ import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
 import 'package:flutter_course_2/utailates/generics/get_arguments.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CreateUpdateNoteView extends StatefulWidget {
-  const CreateUpdateNoteView({Key? key}) : super(key: key);
+  const CreateUpdateNoteView({super.key});
 
   @override
   _CreateUpdateNoteViewState createState() => _CreateUpdateNoteViewState();
@@ -104,15 +105,15 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     final isDark = theme.brightness == Brightness.dark;
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24.0),
+        borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
-            blurRadius: 8.0,
-            offset: const Offset(0, 2),
+            color: isDark ? Colors.black26 : Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -231,28 +232,28 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(20.0),
+              borderRadius: BorderRadius.circular(20.r),
               onTap: () {
                 _quillController.formatSelection(attribute);
               },
               child: Container(
-                width: 40.0,
-                height: 40.0,
+                width: 40.w,
+                height: 40.w,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(20.r),
                   color: isActive 
-                    ? theme.colorScheme.primary.withOpacity(0.15)
+                    ? theme.colorScheme.primary.withValues(alpha: 0.15)
                     : Colors.transparent,
                   border: isActive 
-                    ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3), width: 1)
+                    ? Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3), width: 1)
                     : null,
                 ),
                 child: Icon(
                   icon,
-                  size: 18.0,
+                  size: 18.sp,
                   color: isActive 
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -265,10 +266,10 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   Widget _buildVerticalDivider() {
     final theme = Theme.of(context);
     return Container(
-      width: 1.0,
-      height: 24.0,
-      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-      color: theme.colorScheme.onSurface.withOpacity(0.2),
+      width: 1.w,
+      height: 24.h,
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
     );
   }
 
@@ -280,33 +281,33 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: () {
             _showColorPicker(isBackground: false);
           },
           child: Container(
-            width: 40.0,
-            height: 40.0,
+            width: 40.w,
+            height: 40.w,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.0),
+              borderRadius: BorderRadius.circular(20.r),
               color: Colors.transparent,
             ),
             child: Stack(
               children: [
                 Icon(
                   Icons.format_color_text,
-                  size: 18.0,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  size: 18.sp,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 Positioned(
-                  bottom: 8,
-                  right: 8,
+                  bottom: 8.h,
+                  right: 8.w,
                   child: Container(
-                    width: 12,
-                    height: 3,
+                    width: 12.w,
+                    height: 3.h,
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
                 ),
@@ -326,33 +327,33 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: () {
             _showColorPicker(isBackground: true);
           },
           child: Container(
-            width: 40.0,
-            height: 40.0,
+            width: 40.w,
+            height: 40.w,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.0),
+              borderRadius: BorderRadius.circular(20.r),
               color: Colors.transparent,
             ),
             child: Stack(
               children: [
                 Icon(
                   Icons.format_color_fill,
-                  size: 18.0,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  size: 18.sp,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 Positioned(
-                  bottom: 8,
-                  right: 8,
+                  bottom: 8.h,
+                  right: 8.w,
                   child: Container(
-                    width: 12,
-                    height: 3,
+                    width: 12.w,
+                    height: 3.h,
                     decoration: BoxDecoration(
                       color: Colors.yellow,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
                 ),
@@ -372,7 +373,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: () {
             final attrs = {
               quill.Attribute.bold,
@@ -398,16 +399,16 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
             }
           },
           child: Container(
-            width: 40.0,
-            height: 40.0,
+            width: 40.w,
+            height: 40.w,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.0),
+              borderRadius: BorderRadius.circular(20.r),
               color: Colors.transparent,
             ),
             child: Icon(
               Icons.format_clear,
-              size: 18.0,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              size: 18.sp,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ),
@@ -428,12 +429,12 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
             style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           content: SizedBox(
-            width: 250,
+            width: 250.w,
             child: GridView.count(
               crossAxisCount: 5,
               shrinkWrap: true,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+              mainAxisSpacing: 8.r,
+              crossAxisSpacing: 8.r,
               children: [
                 Colors.black, Colors.red, Colors.blue, Colors.green, Colors.yellow,
                 Colors.orange, Colors.purple, Colors.pink, Colors.teal, Colors.indigo,
@@ -474,12 +475,12 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
         Navigator.of(context).pop();
       },
       child: Container(
-        width: 30,
-        height: 30,
+        width: 30.w,
+        height: 30.w,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 1),
         ),
       ),
     );
@@ -503,13 +504,13 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onBackground),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface), // Fix deprecated onBackground
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
             onPressed: _shareNote,
-            icon: Icon(Icons.share, color: theme.colorScheme.onBackground),
+            icon: Icon(Icons.share, color: theme.colorScheme.onSurface), // Fix deprecated onBackground
           )
         ],
       ),
@@ -528,36 +529,36 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
             return Center(
               child: Text(
                 'Error: ${snapshot.error}',
-                style: TextStyle(color: theme.colorScheme.onBackground),
+                style: TextStyle(color: theme.colorScheme.onSurface), // Fix deprecated onBackground
               ),
             );
           }
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Column(
               children: [
                 TextField(
                   controller: _titleController,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onBackground,
+                    color: theme.colorScheme.onSurface, // Fix deprecated onBackground
                   ),
                   decoration: InputDecoration(
                     hintText: 'Title',
                     hintStyle: TextStyle(
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5), // Fix deprecated onBackground
                     ),
                     border: InputBorder.none,
                     filled: true,
                     fillColor: theme.scaffoldBackgroundColor,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 // Custom Google Keep style toolbar
                 Center(child: _buildCustomToolbar()),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(

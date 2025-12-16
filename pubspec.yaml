@@ -49,6 +49,10 @@ dependencies:
   flutter_quill: ^11.4.1
   url_launcher: 
   connectivity_plus: ^6.1.4
+  provider: ^6.1.5+1
+  flutter_localizations:
+    sdk: flutter
+  flutter_screenutil: ^5.9.3
  
 
 

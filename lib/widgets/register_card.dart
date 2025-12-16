@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegisterCard extends StatelessWidget {
   final TextEditingController controller;
@@ -23,12 +24,12 @@ class RegisterCard extends StatelessWidget {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
       child: Container(
-        width: 600,
-        height: 600,
+        width: 600.w,
+        height: 600.h,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           color: Colors.white
-              .withOpacity(0.5), // adjust opacity to see the blur effect
+              .withValues(alpha: 0.5), // adjust opacity to see the blur effect
         ),
         child: Column(
           children: [],

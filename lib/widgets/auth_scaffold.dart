@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AuthScreenLayout extends StatelessWidget {
   final Widget child;
@@ -22,18 +23,18 @@ class AuthScreenLayout extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
             child: Container(
-              padding: const EdgeInsets.all(24.0),
-              constraints: const BoxConstraints(maxWidth: 400),
+              padding: EdgeInsets.all(24.r),
+              constraints: BoxConstraints(maxWidth: 400.w),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16), // Slightly less rounded
+                borderRadius: BorderRadius.circular(16.r), // Slightly less rounded
                 color: theme.colorScheme.surface, // Use surface color from theme
                 boxShadow: [
                   BoxShadow(
-                    color: theme.shadowColor.withOpacity(0.05), // Softer shadow
-                    blurRadius: 20, // Increased blur
-                    offset: const Offset(0, 8), // Adjusted offset
+                    color: theme.shadowColor.withValues(alpha: 0.05), // Softer shadow
+                    blurRadius: 20.r, // Increased blur
+                    offset: Offset(0, 8.h), // Adjusted offset
                   ),
                 ],
               ),
@@ -49,17 +50,17 @@ class AuthScreenLayout extends StatelessWidget {
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                   ],
                   if (subtitle != null) ...[
                     Text(
                       subtitle!,
                       textAlign: TextAlign.center, // Center align subtitle
                       style: textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                   ],
                   child,
                 ],

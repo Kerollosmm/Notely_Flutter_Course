@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/utailates/dialogs/delete_dialog.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 typedef NoteCallback = void Function(CloudNote note);
 
@@ -51,31 +52,31 @@ class NoteListView extends StatelessWidget {
             }
           },
           child: Container(
-            margin: const EdgeInsets.only(bottom: 12.0),
-            padding: const EdgeInsets.all(16.0),
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
               color: theme.cardColor,
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
+                  color: theme.shadowColor.withValues(alpha: 0.1),
                   spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
+                  blurRadius: 5.r,
+                  offset: Offset(0, 2.h),
                 ),
               ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(8.r),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark ? Colors.blue.withOpacity(0.2) : Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8.0),
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.blue.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(Icons.article_outlined, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.blue.shade800),
                 ),
-                const SizedBox(width: 16.0),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,19 +86,19 @@ class NoteListView extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         plainText,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 14.sp,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],

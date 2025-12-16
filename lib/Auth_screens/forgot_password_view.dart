@@ -7,9 +7,10 @@ import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/utailates/dialogs/show_reset_password_dialog.dart';
 import 'package:flutter_course_2/widgets/Bottom.dart';
 import 'package:flutter_course_2/widgets/CustomTextField.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ForgotPasswordView extends StatefulWidget {
-  const ForgotPasswordView({Key? key}) : super(key: key);
+  const ForgotPasswordView({super.key});
 
   @override
   _ForgotPasswordViewState createState() => _ForgotPasswordViewState();
@@ -52,7 +53,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           title: const Text('Forgot Password'),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.r),
           // Use a BlocBuilder to show a loading indicator while the request is in progress.
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
@@ -69,19 +70,19 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                       'If you forgot your password, simply enter your email and we will send you a password reset link.',
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16.0),
+                    SizedBox(height: 16.h),
                     CustomTextField(
                       controller: _controller,
                       hintText: 'Your email address',
                     ),
-                    const SizedBox(height: 16.0),
+                    SizedBox(height: 16.h),
                     CustomButton(title: 'Send me password reset link', ontap: () {
                       // Dispatch the forgot password event with the entered email.
                       context
                           .read<AuthBloc>()
                           .add(AuthEventForgotPassword(email: _controller.text));
                     }),
-                    const SizedBox(height: 16.0),
+                    SizedBox(height: 16.h),
 
                     TextButton(
                       onPressed: () {

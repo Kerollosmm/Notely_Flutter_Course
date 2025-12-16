@@ -6,6 +6,7 @@ import 'package:flutter_course_2/widgets/MyAlert.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 class HeaderSection extends StatefulWidget {
@@ -57,26 +58,26 @@ class _HeaderSectionState extends State<HeaderSection> {
                     children: [
                       Text(
                         "Hello",
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4), // Small space between texts
+                      SizedBox(height: 4.h), // Small space between texts
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Your Projects',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 4), // Space between title and count
+                          SizedBox(width: 4.w), // Space between title and count
                           Text(
                             '(4)', // Project count
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 20.sp,
                               fontWeight: FontWeight.w400,
                               color: Colors.grey[600],
                             ),
@@ -87,9 +88,9 @@ class _HeaderSectionState extends State<HeaderSection> {
                   ),
 
                   // Profile picture on the right side
-                  const CircleAvatar(
-                    radius: 20, // Size of the profile picture
-                    backgroundImage: AssetImage("assets/images (3).jpeg"),
+                  CircleAvatar(
+                    radius: 20.r, // Size of the profile picture
+                    backgroundImage: const AssetImage("assets/images (3).jpeg"),
                   ),
                 ],
               ),

@@ -8,6 +8,7 @@ import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/widgets/CustomTextField.dart';
 import 'package:flutter_course_2/widgets/Bottom.dart';
 import 'package:flutter_course_2/widgets/snakbar.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -72,11 +73,11 @@ class _LoginScreenState extends State<LoginScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface, // Fixed deprecated background color
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
@@ -85,24 +86,24 @@ class _LoginScreenState extends State<LoginScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
+                      Text(
                         'Welcome Back!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 32.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         'Sign in to continue',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           color: Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      SizedBox(height: 48.h),
                       CustomTextField(
                         controller: _email,
                         labelText: "Email",
@@ -110,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen>
                         keyboardType: TextInputType.emailAddress,
                         prefixIcon: const Icon(Icons.email_outlined),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       CustomTextField(
                         controller: _password,
                         labelText: 'Password',
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen>
                           child: const Text("Forgot Password?"),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       CustomButton(
                         title: "Login",
                         ontap: () {
@@ -149,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen>
                           }
                         },
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

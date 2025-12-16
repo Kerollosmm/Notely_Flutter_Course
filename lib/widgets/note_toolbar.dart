@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class NoteToolbar extends StatefulWidget {
   final quill.QuillController quillController;
 
   const NoteToolbar({
-    Key? key,
+    super.key,
     required this.quillController,
-  }) : super(key: key);
+  });
 
   @override
   _NoteToolbarState createState() => _NoteToolbarState();
@@ -64,18 +65,18 @@ class _NoteToolbarState extends State<NoteToolbar>
   }) {
     final theme = Theme.of(context);
     return Container(
-      width: 40,
-      height: 40,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 40.w,
+      height: 40.w, // Square button
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
       child: Material(
         color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: onPressed,
           child: Icon(
             icon,
-            size: 20,
+            size: 20.sp,
             color: isActive ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
           ),
         ),
@@ -85,8 +86,8 @@ class _NoteToolbarState extends State<NoteToolbar>
 
   Widget _buildDivider() {
     return Container(
-      width: 1,
-      height: 20,
+      width: 1.w,
+      height: 20.h,
       color: Theme.of(context).dividerColor,
     );
   }
@@ -95,10 +96,10 @@ class _NoteToolbarState extends State<NoteToolbar>
     final theme = Theme.of(context);
     final quillAttrs = widget.quillController.getSelectionStyle().attributes;
     return Container(
-      height: 50,
+      height: 50.h,
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
@@ -156,19 +157,19 @@ class _NoteToolbarState extends State<NoteToolbar>
     return Container( // No AnimatedSize needed here as the parent will handle it or it's fixed size
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         children: [
           Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            height: 50.h,
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             decoration: BoxDecoration(
               color: theme.colorScheme.secondaryContainer,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.r),
+                topRight: Radius.circular(12.r),
               ),
             ),
             child: Row(
@@ -176,14 +177,14 @@ class _NoteToolbarState extends State<NoteToolbar>
                 Text(
                   'Formatting Tools',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: theme.colorScheme.onSecondaryContainer,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: Icon(Icons.close, size: 20.sp),
                   tooltip: 'Collapse Toolbar',
                   onPressed: _toggleToolbar,
                   color: theme.colorScheme.onSecondaryContainer,
@@ -192,7 +193,7 @@ class _NoteToolbarState extends State<NoteToolbar>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.r),
             child: quill.QuillSimpleToolbar(
               controller: widget.quillController,
               config: const quill.QuillSimpleToolbarConfig(

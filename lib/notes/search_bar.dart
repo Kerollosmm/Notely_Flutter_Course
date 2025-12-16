@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -6,17 +7,17 @@ class SearchBarWidget extends StatelessWidget {
   final String hintText;
 
   const SearchBarWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onChanged,
     this.hintText = 'Search notes...',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: theme.cardColor,
         // Removed borderRadius and boxShadow to make it a simple rectangle
@@ -26,10 +27,10 @@ class SearchBarWidget extends StatelessWidget {
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-          prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface.withOpacity(0.5), size: 20),
+          hintStyle: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+          prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface.withValues(alpha: 0.5), size: 20.sp),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -35,7 +36,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0), // Reduced margin, changed to padding
+      padding: EdgeInsets.symmetric(vertical: 8.h), // Reduced margin, changed to padding
       child: TextFormField(
         controller: widget.controller,
         obscureText: widget.isPassword ? _obscureText : false,
@@ -48,7 +49,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           hintText: widget.hintText,
           prefixIcon: widget.prefixIcon != null
               ? IconTheme(
-                  data: IconTheme.of(context).copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                  data: IconTheme.of(context).copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                   child: widget.prefixIcon!,
                 )
               : null,
