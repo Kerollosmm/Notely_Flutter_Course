@@ -10,9 +10,11 @@ import 'package:flutter_course_2/services/auth/auth_provider.dart';
 class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<void> initialize() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   }
 
   @override
@@ -149,9 +151,9 @@ class FirebaseAuthProvider implements AuthProvider {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: toEmail);
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
-        case 'firebase_auth/invalid-email':
+        case 'invalid-email':
           throw InvalidEmailAuthExceptions();
-        case 'firebase_auth/user-not-found':
+        case 'user-not-found':
           throw UserNotFoundAuthExceptions();
         default:
           throw GenericAuthExceptions();
