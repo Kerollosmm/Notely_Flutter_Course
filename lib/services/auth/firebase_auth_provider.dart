@@ -23,45 +23,26 @@ class FirebaseAuthProvider implements AuthProvider {
     required String password,
   }) async {
     try {
-      // Add retry logic for reCAPTCHA errors
-      int retryCount = 0;
-      const maxRetries = 3;
-      
-      while (retryCount < maxRetries) {
-        try {
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: email,
-            password: password,
-          );
-          final user = currentUser;
-          if (user != null) {
-            return user;
-          } else {
-            throw UserNotLoginAuthExceptions();
-          }
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'weak-password') {
-            throw WeakPasswordAuthExceptions();
-          } else if (e.code == 'email-already-in-use') {
-            throw EmailAlreadyInUseAuthExceptions();
-          } else if (e.code == 'invalid-email') {
-            throw InvalidEmailAuthExceptions();
-          } else if (e.code == 'network-request-failed' || 
-                     e.message?.contains('network error') == true ||
-                     e.message?.contains('unreachable host') == true) {
-            retryCount++;
-            if (retryCount >= maxRetries) {
-              throw GenericAuthExceptions();
-            }
-            // Wait before retrying
-            await Future.delayed(Duration(seconds: 2 * retryCount));
-            continue;
-          } else {
-            throw GenericAuthExceptions();
-          }
-        }
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final user = currentUser;
+      if (user != null) {
+        return user;
+      } else {
+        throw UserNotLoginAuthExceptions();
       }
-      throw GenericAuthExceptions();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        throw WeakPasswordAuthExceptions();
+      } else if (e.code == 'email-already-in-use') {
+        throw EmailAlreadyInUseAuthExceptions();
+      } else if (e.code == 'invalid-email') {
+        throw InvalidEmailAuthExceptions();
+      } else {
+        throw GenericAuthExceptions();
+      }
     } catch (_) {
       throw GenericAuthExceptions();
     }
@@ -163,4 +144,3 @@ class FirebaseAuthProvider implements AuthProvider {
     }
   }
 }
-

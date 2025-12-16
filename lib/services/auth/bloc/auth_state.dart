@@ -44,8 +44,11 @@ class AuthStateLoggedIn extends AuthState {
 }
 
 class AuthStateNeedsVerification extends AuthState {
-  const AuthStateNeedsVerification({required bool isLoading})
-      : super(isLoading: isLoading);
+  final bool justRegistered;
+  const AuthStateNeedsVerification({
+    required bool isLoading,
+    this.justRegistered = false,
+  }) : super(isLoading: isLoading);
 }
 
 class AuthStateLoggedOut extends AuthState with EquatableMixin {

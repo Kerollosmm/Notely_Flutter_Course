@@ -76,8 +76,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           email: email,
           password: password,
         );
+        // User is created and signed in (by firebase_auth default behavior).
+        // Checks if user is not null is done inside provider.createUser
+
         await provider.sendEmailVerification();
-        emit(const AuthStateNeedsVerification(isLoading: false));
+
+        // We emit AuthStateNeedsVerification with justRegistered: true to signal the UI to show a SnackBar
+        emit(const AuthStateNeedsVerification(
+          isLoading: false,
+          justRegistered: true,
+        ));
       } on Exception catch (e) {
         emit(AuthStateRegistering(
           exception: e,

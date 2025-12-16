@@ -34,6 +34,14 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
         } else {
           LoadingScreen().hide();
         }
+
+        if (state is AuthStateNeedsVerification && state.justRegistered) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account created! Please verify your email."),
+            ),
+          );
+        }
       },
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
