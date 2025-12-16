@@ -2,9 +2,13 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_course_2/services/auth/auth_provider.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  // We need to initialize NoteRepository/Service upon login to ensure user exists in local DB
+  final NotesService _notesService = NotesService();
+
   AuthBloc(AuthProvider provider)
       : super(const AuthStateUninitialized(isLoading: true)) {
     on<AuthEventShouldRegister>((event, emit) {
@@ -85,6 +89,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else if (!user.isEmailVerified) {
         emit(const AuthStateNeedsVerification(isLoading: false));
       } else {
+        // Ensure local DB user exists
+        try {
+            await _notesService.getOrCreateUser(email: user.email);
+        } catch (e) {
+            // Log or ignore? If DB fails, we might have issues.
+        }
+
         emit(AuthStateLoggedIn(
           user: user,
           isLoading: false,
@@ -109,6 +120,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         if (user!.isEmailVerified) {
+          // Ensure local DB user exists
+          try {
+              await _notesService.getOrCreateUser(email: user.email);
+          } catch (e) {
+             //
+          }
+
           emit(AuthStateLoggedIn(
             user: user,
             isLoading: false,
