@@ -466,21 +466,26 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   }
 
   Widget _buildColorOption(Color color, bool isBackground) {
-    return GestureDetector(
-      onTap: () {
-        final hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
-        final attribute =
-            isBackground ? quill.Attribute.background : quill.Attribute.color;
-        _quillController.formatSelection(quill.Attribute.clone(attribute, hex));
-        Navigator.of(context).pop();
-      },
-      child: Container(
-        width: 30.w,
-        height: 30.w,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+    // ignore: deprecated_member_use
+    final hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+    return Semantics(
+      label: '${isBackground ? 'Background' : 'Text'} color $hex',
+      button: true,
+      child: GestureDetector(
+        onTap: () {
+          final attribute =
+              isBackground ? quill.Attribute.background : quill.Attribute.color;
+          _quillController.formatSelection(quill.Attribute.clone(attribute, hex));
+          Navigator.of(context).pop();
+        },
+        child: Container(
+          width: 30.w,
+          height: 30.w,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+          ),
         ),
       ),
     );
@@ -505,12 +510,14 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface), // Fix deprecated onBackground
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
             onPressed: _shareNote,
             icon: Icon(Icons.share, color: theme.colorScheme.onSurface), // Fix deprecated onBackground
+            tooltip: 'Share note',
           )
         ],
       ),
