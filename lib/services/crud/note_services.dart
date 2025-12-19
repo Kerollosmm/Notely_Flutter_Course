@@ -158,6 +158,29 @@ class NotesService {
     }
   }
 
+  Future<DatabaseNote?> getNoteByRemoteId(String remoteId) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final results = await db.rawQuery(
+      'SELECT * FROM $noteTable WHERE $remoteIdColumn = ?',
+      [remoteId],
+    );
+
+    if (results.isEmpty) return null;
+    return DatabaseNote.fromRow(results.first);
+  }
+
+  Future<void> deleteAllData() async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    // Delete all notes and users
+    await db.delete(noteTable);
+    await db.delete(userTable);
+    _notes = [];
+    _notesStreamController.add(_notes);
+    _user = null;
+  }
+
   Future<void> updateNoteSyncStatus({
     required String id,
     required SyncStatus status,

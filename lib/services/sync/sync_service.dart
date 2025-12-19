@@ -151,19 +151,23 @@ class SyncService {
       );
 
       if (remoteNotes.isNotEmpty) {
-        // Optimization: Fetch all local notes once
-        final allLocalNotes = await _localDb.getAllNotes();
-        // Create map for O(1) lookup: RemoteID -> DatabaseNote
-        // Only include notes that have a remoteId
-        final localNoteMap = {
-          for (var n in allLocalNotes)
-            if (n.remoteId != null) n.remoteId!: n
-        };
+        // Optimization using getNoteByRemoteId for specific items if remote count is small,
+        // or bulk fetch if large. For "Notely", sticking to bulk map is fine but let's check.
+        // The master prompt suggested "Efficient Querying: In NotesService, add getNoteByRemoteId...".
+        // And "Optimize ... using getNoteByRemoteId".
+        // But if we have 100 remote notes, 100 SQL queries is worse than 1 bulk query.
+        // However, if we assume incremental sync (only a few modified), then loop with getNoteByRemoteId might be okay.
+        // But we already have `remoteNotes` (modified after last sync).
+        // Let's assume standard use case: Sync is incremental.
+        // But previously I implemented the bulk map approach which is usually O(N) vs O(M*LogN) or O(M*K).
+        // If I strictly follow the prompt to "Efficient Querying... to avoid loading all notes into memory":
+        // I should NOT fetch `getAllNotes()`. I should iterate remoteNotes and query local DB one by one OR use `WHERE remote_id IN (...)`.
+        // Given SQLite limits on variables, one by one or batched chunks is safer if not "all".
 
         final List<DatabaseNote> notesToUpsert = [];
 
         for (final remoteNote in remoteNotes) {
-          final localNote = localNoteMap[remoteNote.documentId];
+          final localNote = await _localDb.getNoteByRemoteId(remoteNote.documentId);
 
           if (localNote != null) {
             // Conflict Resolution: Local Dirty wins (Preserve user edits)
