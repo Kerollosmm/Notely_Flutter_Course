@@ -7,10 +7,8 @@ class FirebaseCloudStorage {
   final notes = FirebaseFirestore.instance.collection('notes');
 
   Stream<Iterable<CloudNote>> allNote({required String ownerUserId}) =>
-      notes.snapshots().map(
-            (event) => event.docs
-                .map((doc) => CloudNote.fromSnapshot(doc))
-                .where((note) => note.ownerUserId == ownerUserId),
+      notes.where(ownerFieldUserId, isEqualTo: ownerUserId).snapshots().map(
+            (event) => event.docs.map((doc) => CloudNote.fromSnapshot(doc)),
           );
 
   Future<void> deleteNotes({required String documentId}) async {
