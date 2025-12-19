@@ -34,18 +34,12 @@ class _LoginScreenState extends State<LoginScreen>
       duration: const Duration(milliseconds: 1200),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOut,
-      ),
-    );
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
     _animationController.forward();
     super.initState();
   }
@@ -73,7 +67,9 @@ class _LoginScreenState extends State<LoginScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface, // Fixed deprecated background color
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface, // Fixed deprecated background color
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -123,9 +119,9 @@ class _LoginScreenState extends State<LoginScreen>
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            context
-                                .read<AuthBloc>()
-                                .add(const AuthEventForgotPassword());
+                            context.read<AuthBloc>().add(
+                              const AuthEventForgotPassword(),
+                            );
                           },
                           child: const Text("Forgot Password?"),
                         ),
@@ -139,14 +135,12 @@ class _LoginScreenState extends State<LoginScreen>
 
                           if (email.isEmpty || password.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              ErrorSnackBar(
-                                message: "Please fill all fields.",
-                              ),
+                              ErrorSnackBar(message: "Please fill all fields."),
                             );
                           } else {
-                            context
-                                .read<AuthBloc>()
-                                .add(AuthEventLogIn(email, password));
+                            context.read<AuthBloc>().add(
+                              AuthEventLogIn(email, password),
+                            );
                           }
                         },
                       ),
@@ -157,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen>
                           const Text("Don't have an account?"),
                           TextButton(
                             onPressed: () {
-                              context
-                                  .read<AuthBloc>()
-                                  .add(const AuthEventShouldRegister());
+                              context.read<AuthBloc>().add(
+                                const AuthEventShouldRegister(),
+                              );
                             },
                             child: const Text(
                               "Register Now",

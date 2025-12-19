@@ -17,17 +17,11 @@ Future<T?> showGenericDialog<T>({
       return CupertinoAlertDialog(
         title: Text(
           title,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 18.sp,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18.sp),
         ),
         content: Padding(
           padding: EdgeInsets.only(top: 12.h),
-          child: Text(
-            content,
-            style: TextStyle(fontSize: 15.sp),
-          ),
+          child: Text(content, style: TextStyle(fontSize: 15.sp)),
         ),
         actions: options.keys.map((optionTitle) {
           final T value = options[optionTitle];

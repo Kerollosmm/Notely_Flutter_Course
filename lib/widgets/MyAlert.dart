@@ -22,9 +22,7 @@ class MyAlert extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       content: Container(
         padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
@@ -36,18 +34,10 @@ class MyAlert extends StatelessWidget {
           children: [
             Text(
               text1,
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 15.h),
-            Text(
-              text2,
-              style: TextStyle(
-                fontSize: 16.sp,
-              ),
-            ),
+            Text(text2, style: TextStyle(fontSize: 16.sp)),
             SizedBox(height: 25.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -64,9 +54,7 @@ class MyAlert extends StatelessWidget {
                   onPressed: onConfirm, // Invoke the callback directly
                   child: Text(
                     buttonText1,
-                    style: const TextStyle(
-                      color: Colors.black,
-                    ),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ),
                 ElevatedButton(

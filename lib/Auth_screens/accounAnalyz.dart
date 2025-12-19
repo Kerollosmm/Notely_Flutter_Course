@@ -30,7 +30,9 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
       listener: (context, state) {
         if (state.isLoading) {
           LoadingScreen().show(
-              context: context, text: state.loadingText ?? 'please wait a moment ');
+            context: context,
+            text: state.loadingText ?? 'please wait a moment ',
+          );
         } else {
           LoadingScreen().hide();
         }
@@ -60,11 +62,7 @@ class LaudingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-          child: CircularProgressIndicator(
-        color: Colors.blue,
-      )),
+      body: Center(child: CircularProgressIndicator(color: Colors.blue)),
     );
   }
 }
-

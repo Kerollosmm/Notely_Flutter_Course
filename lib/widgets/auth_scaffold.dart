@@ -28,11 +28,16 @@ class AuthScreenLayout extends StatelessWidget {
               padding: EdgeInsets.all(24.r),
               constraints: BoxConstraints(maxWidth: 400.w),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.r), // Slightly less rounded
-                color: theme.colorScheme.surface, // Use surface color from theme
+                borderRadius: BorderRadius.circular(
+                  16.r,
+                ), // Slightly less rounded
+                color:
+                    theme.colorScheme.surface, // Use surface color from theme
                 boxShadow: [
                   BoxShadow(
-                    color: theme.shadowColor.withValues(alpha: 0.05), // Softer shadow
+                    color: theme.shadowColor.withValues(
+                      alpha: 0.05,
+                    ), // Softer shadow
                     blurRadius: 20.r, // Increased blur
                     offset: Offset(0, 8.h), // Adjusted offset
                   ),
@@ -40,7 +45,8 @@ class AuthScreenLayout extends StatelessWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to fill width
+                crossAxisAlignment:
+                    CrossAxisAlignment.stretch, // Stretch to fill width
                 children: [
                   if (title != null) ...[
                     Text(
@@ -57,7 +63,9 @@ class AuthScreenLayout extends StatelessWidget {
                       subtitle!,
                       textAlign: TextAlign.center, // Center align subtitle
                       style: textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                     SizedBox(height: 32.h),

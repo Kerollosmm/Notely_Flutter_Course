@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 class HeaderSection extends StatefulWidget {
   const HeaderSection({super.key});
 
@@ -34,9 +33,7 @@ class _HeaderSectionState extends State<HeaderSection> {
                       case MenuAction.logout:
                         final shouldLogout = await showLogOutDialog(context);
                         if (shouldLogout) {
-                          context.read<AuthBloc>().add(
-                            const AuthEventLogOut(),
-                          );
+                          context.read<AuthBloc>().add(const AuthEventLogOut());
                         }
                         break;
                     }
@@ -98,9 +95,7 @@ class _HeaderSectionState extends State<HeaderSection> {
               elevation: 0, // Remove shadow under AppBar
             );
           default:
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
         }
       },
     );

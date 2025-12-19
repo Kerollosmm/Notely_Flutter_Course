@@ -9,23 +9,38 @@ class AppTheme {
   static const Color primaryLight = Color(0xFF007AFF); // A nice blue
   static const Color onBackgroundLight = Color(0xFF000000);
   static const Color onSurfaceLight = Color(0xFF000000);
-  static const Color secondaryTextLight = Color(0xFF8A8A8E); // For subtitles, hints
+  static const Color secondaryTextLight = Color(
+    0xFF8A8A8E,
+  ); // For subtitles, hints
 
   // Dark Theme Colors
   static const Color backgroundDark = Color(0xFF1C1C1E);
   static const Color surfaceDark = Color(0xFF2C2C2E); // For cards, text fields
-  static const Color primaryDark = Color(0xFF0A84FF); // A slightly brighter blue for dark mode
+  static const Color primaryDark = Color(
+    0xFF0A84FF,
+  ); // A slightly brighter blue for dark mode
   static const Color onBackgroundDark = Color(0xFFFFFFFF);
   static const Color onSurfaceDark = Color(0xFFFFFFFF);
-  static const Color secondaryTextDark = Color(0xFF8D8D93); // For subtitles, hints
+  static const Color secondaryTextDark = Color(
+    0xFF8D8D93,
+  ); // For subtitles, hints
 
   // Typography
   static final TextTheme _textTheme = TextTheme(
-    headlineMedium: GoogleFonts.lato(fontSize: 22.sp, fontWeight: FontWeight.bold), // AppBar titles
-    titleLarge: GoogleFonts.lato(fontSize: 18.sp, fontWeight: FontWeight.bold), // Note titles
+    headlineMedium: GoogleFonts.lato(
+      fontSize: 22.sp,
+      fontWeight: FontWeight.bold,
+    ), // AppBar titles
+    titleLarge: GoogleFonts.lato(
+      fontSize: 18.sp,
+      fontWeight: FontWeight.bold,
+    ), // Note titles
     titleMedium: GoogleFonts.lato(fontSize: 16.sp), // Note subtitles/body
     bodyMedium: GoogleFonts.lato(fontSize: 16.sp),
-    labelLarge: GoogleFonts.lato(fontSize: 16.sp, fontWeight: FontWeight.w700), // Buttons
+    labelLarge: GoogleFonts.lato(
+      fontSize: 16.sp,
+      fontWeight: FontWeight.w700,
+    ), // Buttons
   );
 
   static ThemeData get lightTheme {
@@ -46,7 +61,9 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: backgroundLight,
-        titleTextStyle: _textTheme.headlineMedium?.copyWith(color: onBackgroundLight),
+        titleTextStyle: _textTheme.headlineMedium?.copyWith(
+          color: onBackgroundLight,
+        ),
         iconTheme: const IconThemeData(color: onBackgroundLight),
       ),
       textTheme: _textTheme.apply(
@@ -57,7 +74,10 @@ class AppTheme {
         filled: true,
         fillColor: surfaceLight,
         hintStyle: TextStyle(color: secondaryTextLight),
-        labelStyle: const TextStyle(color: onBackgroundLight, fontWeight: FontWeight.bold),
+        labelStyle: const TextStyle(
+          color: onBackgroundLight,
+          fontWeight: FontWeight.bold,
+        ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0.r),
@@ -93,7 +113,9 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: backgroundDark,
-        titleTextStyle: _textTheme.headlineMedium?.copyWith(color: onBackgroundDark),
+        titleTextStyle: _textTheme.headlineMedium?.copyWith(
+          color: onBackgroundDark,
+        ),
         iconTheme: const IconThemeData(color: onBackgroundDark),
       ),
       textTheme: _textTheme.apply(
@@ -104,7 +126,10 @@ class AppTheme {
         filled: true,
         fillColor: surfaceDark,
         hintStyle: TextStyle(color: secondaryTextDark),
-        labelStyle: const TextStyle(color: onBackgroundDark, fontWeight: FontWeight.bold),
+        labelStyle: const TextStyle(
+          color: onBackgroundDark,
+          fontWeight: FontWeight.bold,
+        ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0.r),

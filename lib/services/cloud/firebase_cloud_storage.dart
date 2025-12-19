@@ -6,14 +6,14 @@ import 'package:flutter_course_2/services/cloud/cloud_storage_exceptions.dart';
 class FirebaseCloudStorage {
   final notes = FirebaseFirestore.instance.collection('notes');
 
-  // التعديل هنا: طلبنا من الداتابيز تبعت بس الملاحظات الخاصة بالمستخدم
   Stream<Iterable<CloudNote>> allNote({required String ownerUserId}) {
     return notes
-        .where(ownerFieldUserId, isEqualTo: ownerUserId) // الفلترة بقت هنا في الطلب نفسه
+        .where(ownerFieldUserId, isEqualTo: ownerUserId)
         .snapshots()
-        .map((event) => event.docs
-            .map((doc) => CloudNote.fromSnapshot(doc))
-            .toList());
+        .map(
+          (event) =>
+              event.docs.map((doc) => CloudNote.fromSnapshot(doc)).toList(),
+        );
   }
 
   Future<void> deleteNotes({required String documentId}) async {
@@ -26,13 +26,15 @@ class FirebaseCloudStorage {
 
   Future<void> updateNotes({
     required String documentId,
-    required String text,
-    required String title,
+    required String contentJson,
+    String title = '', // Optional for now
+    required Timestamp lastModified,
   }) async {
     try {
       await notes.doc(documentId).update({
-        textFieldName: text,
+        textFieldName: contentJson,
         titleFieldName: title,
+        'last_modified': lastModified,
       });
     } catch (e) {
       throw CouldNotUpdateNoteException();
@@ -52,18 +54,43 @@ class FirebaseCloudStorage {
     }
   }
 
-  Future<CloudNote> createNewNote({required String ownerUserId}) async {
+  // New method for Sync
+  Future<Iterable<CloudNote>> getNotesModifiedAfter({
+    required String ownerUserId,
+    required Timestamp lastSynced,
+  }) async {
+    try {
+      return await notes
+          .where(ownerFieldUserId, isEqualTo: ownerUserId)
+          .where('last_modified', isGreaterThan: lastSynced)
+          .get()
+          .then(
+            (value) => value.docs.map((doc) => CloudNote.fromSnapshot(doc)),
+          );
+    } catch (e) {
+      // Index might be required
+      throw CouldNotGetAllNotesException();
+    }
+  }
+
+  Future<CloudNote> createNewNote({
+    required String ownerUserId,
+    required String contentJson,
+    required Timestamp lastModified,
+  }) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
-      textFieldName: '',
+      textFieldName: contentJson,
       titleFieldName: '',
+      'last_modified': lastModified,
     });
     final fitchNote = await document.get();
     return CloudNote(
       documentId: fitchNote.id,
       ownerUserId: ownerUserId,
-      text: '',
+      contentJson: contentJson,
       title: '',
+      lastModified: lastModified,
     );
   }
 

@@ -167,7 +167,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ],
                 ),
-              
               ],
             ),
           ),
@@ -175,6 +174,4 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
     );
   }
-
-
 }

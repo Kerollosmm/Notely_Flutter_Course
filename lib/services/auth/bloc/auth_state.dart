@@ -18,10 +18,8 @@ class AuthStateUninitialized extends AuthState {
 
 class AuthStateRegistering extends AuthState {
   final Exception? exception;
-  const AuthStateRegistering({
-    required this.exception,
-    required isLoading,
-  }) : super(isLoading: isLoading);
+  const AuthStateRegistering({required this.exception, required isLoading})
+    : super(isLoading: isLoading);
 }
 
 class AuthStateForgotPassword extends AuthState {
@@ -36,10 +34,7 @@ class AuthStateForgotPassword extends AuthState {
 
 class AuthStateLoggedIn extends AuthState {
   final AuthUser user;
-  const AuthStateLoggedIn({
-    required this.user,
-    required super.isLoading,
-  });
+  const AuthStateLoggedIn({required this.user, required super.isLoading});
 }
 
 class AuthStateNeedsVerification extends AuthState {

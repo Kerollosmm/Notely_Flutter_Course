@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_linux
+  quill_native_bridge_linux
   url_launcher_linux
 )
 

@@ -44,20 +44,14 @@ class NoteCard extends StatelessWidget {
                 note.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8.h),
               Text(
                 plainText,
                 maxLines: 5,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 14.sp, color: Colors.black54),
               ),
             ],
           ),

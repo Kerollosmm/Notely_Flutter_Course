@@ -24,10 +24,7 @@ class NoteTitleField extends StatelessWidget {
         fontWeight: FontWeight.bold,
         color: theme.colorScheme.onSurface,
       ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        border: InputBorder.none,
-      ),
+      decoration: InputDecoration(hintText: hintText, border: InputBorder.none),
       maxLines: 1, // Keep title to a single line typically
       textCapitalization: TextCapitalization.sentences,
     );

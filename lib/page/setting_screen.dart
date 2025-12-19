@@ -31,7 +31,13 @@ class _SettingsViewState extends State<SettingsView> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         leading: IconButton(
@@ -62,7 +68,9 @@ class _SettingsViewState extends State<SettingsView> {
               title: 'About',
               subtitle: 'Learn more about the app',
               onTap: () async {
-                final Uri url = Uri.parse('https://github.com/Kerollosmm/Notely_Flutter_Course');
+                final Uri url = Uri.parse(
+                  'https://github.com/Kerollosmm/Notely_Flutter_Course',
+                );
                 if (!await launchUrl(url)) {
                   throw Exception('Could not launch $url');
                 }
@@ -85,10 +93,9 @@ class _SettingsViewState extends State<SettingsView> {
           context.read<AuthBloc>().add(const AuthEventLogOut());
           // Navigate to the root and remove all previous screens
           Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => const AccountAnalyze(),
-              ),
-              (route) => false);
+            MaterialPageRoute(builder: (context) => const AccountAnalyze()),
+            (route) => false,
+          );
         }
       },
       borderRadius: BorderRadius.circular(12.r),
@@ -155,10 +162,16 @@ class _SettingsViewState extends State<SettingsView> {
             Container(
               padding: EdgeInsets.all(12.r),
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.blue.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.1),
+                color: isDarkMode
+                    ? Colors.blue.withValues(alpha: 0.2)
+                    : Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon, color: isDarkMode ? Colors.white : Colors.blue.shade800, size: 24.sp),
+              child: Icon(
+                icon,
+                color: isDarkMode ? Colors.white : Colors.blue.shade800,
+                size: 24.sp,
+              ),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -184,7 +197,12 @@ class _SettingsViewState extends State<SettingsView> {
                 ],
               ),
             ),
-            trailing ?? Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16.sp),
+            trailing ??
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey[400],
+                  size: 16.sp,
+                ),
           ],
         ),
       ),
@@ -220,7 +238,9 @@ class _SettingsViewState extends State<SettingsView> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const Icon(Icons.arrow_drop_down, color: Colors.grey),

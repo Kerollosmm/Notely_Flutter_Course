@@ -75,10 +75,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
               SizedBox(height: 12.h),
               Text(
                 'We just sent an email to ${userEmail ?? "your email address"}.\nClick the link in the email to verify your account.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14.sp,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 24.h),
@@ -93,15 +90,13 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  context
-                      .read<AuthBloc>()
-                      .add(const AuthEventSendEmailVerification());
+                  context.read<AuthBloc>().add(
+                    const AuthEventSendEmailVerification(),
+                  );
                 },
                 child: const Text(
                   'Resend email',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
               SizedBox(height: 12.h),
