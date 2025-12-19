@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/Auth_screens/forgot_password_view.dart';
-import 'package:flutter_course_2/Auth_screens/loginpage.dart';
-import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
-import 'package:flutter_course_2/Auth_screens/veryfy.dart';
+import 'package:flutter_course_2/Auth_screens/login_page.dart';
+import 'package:flutter_course_2/Auth_screens/register_screen.dart';
+import 'package:flutter_course_2/Auth_screens/verify_email_view.dart';
 import 'package:flutter_course_2/helpers/loading/loading_screen.dart';
 import 'package:flutter_course_2/pages/home_screen.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';

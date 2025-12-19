@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
+import 'package:flutter_course_2/Auth_screens/account_analyzer.dart';
 import 'package:flutter_course_2/constants/app_theme.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/firebase_options.dart';
