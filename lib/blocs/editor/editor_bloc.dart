@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Events
 abstract class EditorEvent extends Equatable {
@@ -98,11 +99,11 @@ class EditorSaved extends EditorState {}
 
 // BLoC
 class EditorBloc extends Bloc<EditorEvent, EditorState> {
-  final FirebaseCloudStorage _storage;
+  final NoteRepository _repository;
   CloudNote? _currentNote;
   Timer? _autoSaveTimer;
 
-  EditorBloc(this._storage) : super(EditorInitial()) {
+  EditorBloc(this._repository) : super(EditorInitial()) {
     on<EditorLoadNote>(_onLoadNote);
     on<EditorTitleChanged>(_onTitleChanged);
     on<EditorContentChanged>(_onContentChanged);
@@ -119,12 +120,12 @@ class EditorBloc extends Bloc<EditorEvent, EditorState> {
         title: _currentNote!.title,
         contentJson: _currentNote!.contentJson,
         tags: List.from(_currentNote!.tags),
-        lastEdited: DateTime.now(), // Or fetch from note if available
+        lastEdited: DateTime.now(),
       ));
     } else {
       emit(EditorLoaded(
         title: '',
-        contentJson: '[{"insert":"\\n"}]', // Empty Quill Delta
+        contentJson: '[{"insert":"\\n"}]',
         tags: [],
         lastEdited: DateTime.now(),
       ));
@@ -182,23 +183,51 @@ class EditorBloc extends Bloc<EditorEvent, EditorState> {
 
         if (_currentNote == null) {
           // Create new
-          _currentNote = await _storage.createNewNote(
-            ownerUserId: currentUser.id,
+          final owner = await _repository.getOrCreateUser(email: currentUser.email);
+          final dbNote = await _repository.createNote(
+            owner: owner,
+            category: 'Personal', // Default
+            tags: currentState.tags,
+          );
+          // Update content immediately
+          final updated = await _repository.updateNote(
+            note: dbNote,
             contentJson: currentState.contentJson,
-            lastModified: Timestamp.now(),
+            category: 'Personal',
+            tags: currentState.tags,
+          );
+
+          // Update _currentNote to prevent creating duplicates on next save
+          _currentNote = CloudNote(
+            documentId: updated.id,
+            ownerUserId: updated.userId.toString(),
+            contentJson: updated.contentJson,
+            title: currentState.title,
+            lastModified: Timestamp.fromDate(updated.lastModified),
+            category: updated.category,
+            tags: updated.tags,
+          );
+        } else {
+          // Update existing
+          // Construct minimal DatabaseNote for ID
+          final dbNote = DatabaseNote(
+            id: _currentNote!.documentId,
+            userId: 0, // Not used for update lookup
+            contentJson: '',
+            syncStatus: SyncStatus.dirty,
+            remoteId: null,
+            lastModified: DateTime.now(),
+            category: '',
+            tags: [],
+          );
+
+          await _repository.updateNote(
+            note: dbNote,
+            contentJson: currentState.contentJson,
             category: 'Personal',
             tags: currentState.tags,
           );
         }
-
-        await _storage.updateNotes(
-          documentId: _currentNote!.documentId,
-          contentJson: currentState.contentJson,
-          title: currentState.title,
-          category: 'Personal',
-          tags: currentState.tags,
-          lastModified: Timestamp.now(),
-        );
 
         emit(currentState.copyWith(isDirty: false));
       } catch (e) {

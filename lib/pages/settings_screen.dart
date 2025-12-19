@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_course_2/constants/app_colors.dart';
 import 'package:flutter_course_2/constants/app_dimensions.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
+import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_course_2/providers/theme_notifier.dart';
 
@@ -76,10 +79,10 @@ class SettingsScreen extends StatelessWidget {
                    );
 
                    if (shouldLogout == true) {
-                      await AuthService.firebase().logOut();
-                      if (context.mounted) {
-                        Navigator.of(context).pushNamedAndRemoveUntil('/login/', (_) => false);
-                      }
+                      // Trigger security fix in AuthBloc
+                      context.read<AuthBloc>().add(const AuthEventLogOut());
+                      // Clear navigation stack
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                    }
                 },
                 child: Text('Log Out', style: TextStyle(color: Colors.red, fontSize: 16.sp)),
@@ -115,7 +118,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusL),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

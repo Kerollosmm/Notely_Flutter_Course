@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Events
 abstract class HomeEvent extends Equatable {
@@ -70,10 +72,10 @@ class HomeError extends HomeState {
 
 // BLoC
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  final FirebaseCloudStorage _notesService;
+  final NoteRepository _noteRepository;
   StreamSubscription? _notesSubscription;
 
-  HomeBloc(this._notesService) : super(HomeInitial()) {
+  HomeBloc(this._noteRepository) : super(HomeInitial()) {
     on<HomeLoadNotes>(_onLoadNotes);
     on<HomeNotesUpdated>(_onNotesUpdated);
     on<HomeFilterChanged>(_onFilterChanged);
@@ -89,10 +91,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         return;
       }
 
+      // Ensure local DB user is set
+      await _noteRepository.getOrCreateUser(email: user.email);
+
       _notesSubscription?.cancel();
-      _notesSubscription = _notesService.allNote(ownerUserId: user.id).listen(
+      _notesSubscription = _noteRepository.allNotes.listen(
         (notes) {
-          add(HomeNotesUpdated(notes.toList()));
+          final cloudNotes = notes.map((n) => _mapToCloudNote(n)).toList();
+          add(HomeNotesUpdated(cloudNotes));
         },
         onError: (error) {
           // Handle stream error
@@ -140,10 +146,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _onDeleteNote(HomeDeleteNote event, Emitter<HomeState> emit) async {
     try {
-      await _notesService.deleteNotes(documentId: event.noteId);
+      await _noteRepository.deleteNote(id: event.noteId);
     } catch (e) {
       // Error handling
     }
+  }
+
+  CloudNote _mapToCloudNote(DatabaseNote n) {
+    return CloudNote(
+      documentId: n.id, // Use local UUID
+      ownerUserId: n.userId.toString(),
+      contentJson: n.contentJson,
+      title: '', // Title extracted from content by UI
+      lastModified: Timestamp.fromDate(n.lastModified),
+      category: n.category,
+      tags: n.tags,
+    );
   }
 
   @override

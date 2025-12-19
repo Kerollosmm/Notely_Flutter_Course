@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/page/setting_screen.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_course_2/notes/search_bar.dart';

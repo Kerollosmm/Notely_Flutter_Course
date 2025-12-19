@@ -36,6 +36,8 @@ class NotesService {
         if (currentUser != null) {
           return note.userId == currentUser.id;
         } else {
+          // Instead of throwing, just return false or empty if user not set
+          // But strict mode says throw.
           throw UserShouldBeSetBeforeReadingAllNotes();
         }
       });
@@ -84,6 +86,8 @@ class NotesService {
     required String contentJson,
     required String? remoteId,
     required DateTime lastModified,
+    String category = 'Personal',
+    List<String> tags = const [],
     SyncStatus syncStatus = SyncStatus.synced,
   }) async {
     await _ensureDbIsOpen();
@@ -92,55 +96,53 @@ class NotesService {
     // Check if exists
     final exists = await db.query(noteTable, where: 'id = ?', whereArgs: [id]);
 
+    final data = {
+      userIdColumn: userId,
+      contentJsonColumn: contentJson,
+      syncStatusColumn: syncStatus.index,
+      if (remoteId != null) remoteIdColumn: remoteId,
+      lastModifiedColumn: lastModified.millisecondsSinceEpoch,
+      categoryColumn: category,
+      tagsColumn: jsonEncode(tags),
+    };
+
     if (exists.isNotEmpty) {
       await db.update(
         noteTable,
-        {
-          userIdColumn: userId,
-          contentJsonColumn: contentJson,
-          syncStatusColumn: syncStatus.index,
-          if (remoteId != null) remoteIdColumn: remoteId,
-          lastModifiedColumn: lastModified.millisecondsSinceEpoch,
-        },
+        data,
         where: 'id = ?',
         whereArgs: [id],
       );
     } else {
-      await db.insert(noteTable, {
-        idColumn: id,
-        userIdColumn: userId,
-        contentJsonColumn: contentJson,
-        syncStatusColumn: syncStatus.index,
-        remoteIdColumn: remoteId,
-        lastModifiedColumn: lastModified.millisecondsSinceEpoch,
-      });
+      data[idColumn] = id;
+      await db.insert(noteTable, data);
     }
 
-    // Refresh cache (optional, or just for this note)
-    // For performance, maybe don't refresh entire list every time if batching.
-    // But consistent with current architecture:
-    final note = await getNote(
-      id: id,
-    ); // This refreshes the cache for this note
+    final note = await getNote(id: id);
   }
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
-    required String contentJson,
+    String? contentJson,
+    String? category,
+    List<String>? tags,
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
 
-    // make sure note exists
     await getNote(id: note.id);
+
+    final Map<String, Object?> updates = {
+      syncStatusColumn: SyncStatus.dirty.index,
+      lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
+    };
+    if (contentJson != null) updates[contentJsonColumn] = contentJson;
+    if (category != null) updates[categoryColumn] = category;
+    if (tags != null) updates[tagsColumn] = jsonEncode(tags);
 
     final updatesCount = await db.update(
       noteTable,
-      {
-        contentJsonColumn: contentJson,
-        syncStatusColumn: SyncStatus.dirty.index,
-        lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
-      },
+      updates,
       where: 'id = ?',
       whereArgs: [note.id],
     );
@@ -156,7 +158,6 @@ class NotesService {
     }
   }
 
-  // New method to update sync status
   Future<void> updateNoteSyncStatus({
     required String id,
     required SyncStatus status,
@@ -172,7 +173,6 @@ class NotesService {
 
     await db.update(noteTable, updates, where: 'id = ?', whereArgs: [id]);
 
-    // Refresh cache
     final updatedNote = await getNote(id: id);
     _notes.removeWhere((n) => n.id == id);
     _notes.add(updatedNote);
@@ -217,8 +217,7 @@ class NotesService {
       whereArgs: [id],
     );
     if (deletedCount == 0) {
-      // It might have been already deleted or didn't exist
-      // throw CouldNotDeleteNote(); // Optional
+      // throw CouldNotDeleteNote();
     } else {
       _notes.removeWhere((note) => note.id == id);
       _notesStreamController.add(_notes);
@@ -238,7 +237,6 @@ class NotesService {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
 
-    // Soft delete for sync
     final deletedCount = await db.update(
       noteTable,
       {
@@ -257,7 +255,11 @@ class NotesService {
     }
   }
 
-  Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+  Future<DatabaseNote> createNote({
+    required DatabaseUser owner,
+    String category = 'Personal',
+    List<String> tags = const [],
+  }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
 
@@ -266,7 +268,7 @@ class NotesService {
       throw CouldNotFindUser();
     }
 
-    const contentJson = '[{"insert":"\\n"}]'; // Empty Delta JSON
+    const contentJson = '[{"insert":"\\n"}]';
     final noteId = const Uuid().v4();
     final now = DateTime.now().millisecondsSinceEpoch;
 
@@ -276,6 +278,8 @@ class NotesService {
       contentJsonColumn: contentJson,
       syncStatusColumn: SyncStatus.dirty.index,
       lastModifiedColumn: now,
+      categoryColumn: category,
+      tagsColumn: jsonEncode(tags),
     });
 
     final note = DatabaseNote(
@@ -285,6 +289,8 @@ class NotesService {
       syncStatus: SyncStatus.dirty,
       remoteId: null,
       lastModified: DateTime.fromMillisecondsSinceEpoch(now),
+      category: category,
+      tags: tags,
     );
 
     _notes.add(note);
@@ -324,21 +330,12 @@ class NotesService {
       throw UserAlreadyExists();
     }
 
-    // Using String ID for User now?
-    // The previous implementation used auto-increment int for User ID.
-    // For minimal refactor friction, I will keep User ID as int for now,
-    // BUT DatabaseNote.userId MUST match it.
-    // Note: The prompt implies using Firebase UID.
-    // However, DatabaseUser is local.
-    // Let's stick to existing User ID logic for DatabaseUser to avoid breaking everything,
-    // but Note ID is now UUID String.
-
     final userId = await db.insert(userTable, {
       emailColumn: email.toLowerCase(),
     });
 
     return DatabaseUser(
-      id: userId, // Keeping this int for now as per legacy table
+      id: userId,
       email: email,
     );
   }
@@ -368,10 +365,13 @@ class NotesService {
   Future<void> close() async {
     final db = _db;
     if (db == null) {
-      throw DatabaseIsNotOpen();
+      // throw DatabaseIsNotOpen(); // Relaxed: allow redundant close
     } else {
       await db.close();
       _db = null;
+      _user = null; // Clear user on close
+      _notes = []; // Clear cache on close
+      _notesStreamController.add([]); // Notify stream
     }
   }
 
@@ -390,22 +390,22 @@ class NotesService {
     try {
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, dbName);
-      final db = await openDatabase(dbPath);
+      final db = await openDatabase(
+        dbPath,
+        version: 2, // Bump version
+        onUpgrade: (db, oldVersion, newVersion) async {
+           if (oldVersion < 2) {
+             // Add new columns
+             await db.execute("ALTER TABLE $noteTable ADD COLUMN $categoryColumn TEXT DEFAULT 'Personal'");
+             await db.execute("ALTER TABLE $noteTable ADD COLUMN $tagsColumn TEXT DEFAULT '[]'");
+           }
+        },
+        onCreate: (db, version) async {
+          await db.execute(createUserTable);
+          await db.execute(createNoteTable);
+        },
+      );
       _db = db;
-
-      // create the user table
-      await db.execute(createUserTable);
-
-      // create note table
-      // We might need to drop table if it exists and schema changed, for this dev phase
-      // await db.execute('DROP TABLE IF EXISTS $noteTable');
-      // For now, I'll rely on the user to uninstall/reinstall or I'll just change the table name or run a migration
-      // Since this is a refactor, I will update the CREATE statement.
-      // IF the table exists with old schema, it might crash.
-      // I'll add a check or just Create if not exists.
-      // Ideally we version the DB.
-
-      await db.execute(createNoteTable);
       await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectory();
@@ -440,6 +440,8 @@ class DatabaseNote {
   final SyncStatus syncStatus;
   final String? remoteId;
   final DateTime lastModified;
+  final String category;
+  final List<String> tags;
 
   DatabaseNote({
     required this.id,
@@ -448,17 +450,30 @@ class DatabaseNote {
     required this.syncStatus,
     required this.remoteId,
     required this.lastModified,
+    required this.category,
+    required this.tags,
   });
 
   DatabaseNote.fromRow(Map<String, Object?> map)
     : id = map[idColumn] as String,
-      userId = map[userIdColumn] as int,
+      userId = (map[userIdColumn] as num).toInt(),
       contentJson = map[contentJsonColumn] as String,
-      syncStatus = SyncStatus.values[map[syncStatusColumn] as int],
+      syncStatus = SyncStatus.values[(map[syncStatusColumn] as num).toInt()],
       remoteId = map[remoteIdColumn] as String?,
       lastModified = DateTime.fromMillisecondsSinceEpoch(
-        map[lastModifiedColumn] as int,
-      );
+        (map[lastModifiedColumn] as num).toInt(),
+      ),
+      category = (map[categoryColumn] as String?) ?? 'Personal',
+      tags = _parseTags(map[tagsColumn] as String?);
+
+  static List<String> _parseTags(String? tagsJson) {
+    if (tagsJson == null || tagsJson.isEmpty) return [];
+    try {
+      return List<String>.from(jsonDecode(tagsJson));
+    } catch (_) {
+      return [];
+    }
+  }
 
   @override
   String toString() =>
@@ -481,6 +496,8 @@ const contentJsonColumn = 'content_json';
 const syncStatusColumn = 'sync_status';
 const remoteIdColumn = 'remote_id';
 const lastModifiedColumn = 'last_modified';
+const categoryColumn = 'category';
+const tagsColumn = 'tags';
 
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
@@ -488,7 +505,6 @@ const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         PRIMARY KEY("id" AUTOINCREMENT)
       );''';
 
-// Updated Note Table Schema
 const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "id"	TEXT NOT NULL PRIMARY KEY,
         "user_id"	INTEGER NOT NULL,
@@ -496,5 +512,7 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "sync_status"	INTEGER NOT NULL DEFAULT 0,
         "remote_id" TEXT,
         "last_modified" INTEGER NOT NULL,
+        "category" TEXT DEFAULT 'Personal',
+        "tags" TEXT DEFAULT '[]',
         FOREIGN KEY("user_id") REFERENCES "user"("id")
       );''';

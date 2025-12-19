@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_course_2/blocs/home/home_bloc.dart';
 import 'package:flutter_course_2/constants/app_colors.dart';
 import 'package:flutter_course_2/constants/app_dimensions.dart';
@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeBloc(FirebaseCloudStorage())..add(HomeLoadNotes()),
+      create: (context) => HomeBloc(NoteRepository())..add(HomeLoadNotes()),
       child: const _HomeScreenView(),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
 import 'package:flutter_course_2/providers/theme_notifier.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';

@@ -5,7 +5,7 @@ import 'package:flutter_course_2/blocs/editor/editor_bloc.dart' as bloc;
 import 'package:flutter_course_2/constants/app_colors.dart';
 import 'package:flutter_course_2/constants/app_dimensions.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
@@ -21,7 +21,7 @@ class EditScreen extends StatelessWidget {
     final noteToLoad = note ?? routeArgs;
 
     return BlocProvider(
-      create: (context) => bloc.EditorBloc(FirebaseCloudStorage())..add(bloc.EditorLoadNote(noteToLoad)),
+      create: (context) => bloc.EditorBloc(NoteRepository())..add(bloc.EditorLoadNote(noteToLoad)),
       child: const _EditScreenView(),
     );
   }

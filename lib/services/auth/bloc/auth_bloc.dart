@@ -2,8 +2,11 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_course_2/services/auth/auth_provider.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final NoteRepository _noteRepository = NoteRepository();
+
   AuthBloc(AuthProvider provider)
     : super(const AuthStateUninitialized(isLoading: true)) {
     on<AuthEventShouldRegister>((event, emit) {
@@ -105,6 +108,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // log out
     on<AuthEventLogOut>((event, emit) async {
       try {
+        // Critical Security Fix: Clear local database session on logout
+        await _noteRepository.close();
         await provider.logOut();
         emit(const AuthStateLoggedOut(exception: null, isLoading: false));
       } on Exception catch (e) {

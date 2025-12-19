@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_course_2/utailates/generics/get_arguments.dart';

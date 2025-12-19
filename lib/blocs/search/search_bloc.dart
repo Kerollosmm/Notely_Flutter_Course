@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/auth/Auth_servies.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/helpers/note_preview_generator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Events
 abstract class SearchEvent extends Equatable {
@@ -25,6 +28,8 @@ class SearchFilterChanged extends SearchEvent {
   @override
   List<Object> get props => [filterType];
 }
+
+class SearchLoadNotes extends SearchEvent {}
 
 // States
 abstract class SearchState extends Equatable {
@@ -61,24 +66,25 @@ class SearchError extends SearchState {
 
 // BLoC
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  final FirebaseCloudStorage _notesService;
+  final NoteRepository _repository;
   List<CloudNote> _allNotesCache = [];
+  StreamSubscription? _notesSubscription;
 
-  SearchBloc(this._notesService) : super(SearchInitial()) {
+  SearchBloc(this._repository) : super(SearchInitial()) {
     on<SearchQueryChanged>(_onQueryChanged);
     on<SearchFilterChanged>(_onFilterChanged);
-    _loadAllNotes();
+    _initialize();
   }
 
-  Future<void> _loadAllNotes() async {
-    try {
-      final user = AuthService.firebase().currentUser;
-      if (user != null) {
-        final notes = await _notesService.getNotes(ownerUserId: user.id);
-        _allNotesCache = notes.toList();
-      }
-    } catch (e) {
-      // Handle error silently or state
+  void _initialize() async {
+    final user = AuthService.firebase().currentUser;
+    if (user != null) {
+      // Ensure user is set in local DB
+      await _repository.getOrCreateUser(email: user.email);
+
+      _notesSubscription = _repository.allNotes.listen((notes) {
+        _allNotesCache = notes.map((n) => _mapToCloudNote(n)).toList();
+      });
     }
   }
 
@@ -90,7 +96,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     emit(SearchLoading());
 
-    // Filter
     final query = event.query.toLowerCase();
     String currentFilter = 'Text';
     if (state is SearchLoaded) {
@@ -111,8 +116,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final results = _performSearch(currentQuery, event.filterType);
       emit(SearchLoaded(results: results, query: currentQuery, activeFilter: event.filterType));
     } else {
-      // Just change filter state if needed, but usually search starts with query
-      // For now, if no query, remain in Initial or Empty
       emit(SearchInitial());
     }
   }
@@ -123,24 +126,29 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final content = NotePreviewGenerator.getPreview(note.contentJson).toLowerCase();
       final contentMatch = content.contains(query);
 
-      bool typeMatch = true;
       if (filterType == 'Tags') {
-        typeMatch = note.tags.any((t) => t.toLowerCase().contains(query));
-        // If filtering by Tags, we strictly look at tags matching the query OR notes having tags?
-        // Prompt says: "Found 3 notes with 'design'".
-        // Usually, filter chips restrict the scope.
-        // "Text" -> Search in title/content
-        // "Tags" -> Search in tags
-        // "Images" -> Notes with images
-
-        // Let's interpret:
-        if (filterType == 'Text') return titleMatch || contentMatch;
-        if (filterType == 'Tags') return note.tags.isNotEmpty && (titleMatch || contentMatch || note.tags.any((t) => t.toLowerCase().contains(query)));
-        // Simple version:
-        return titleMatch || contentMatch;
+        return note.tags.isNotEmpty && (titleMatch || contentMatch || note.tags.any((t) => t.toLowerCase().contains(query)));
       }
 
       return titleMatch || contentMatch;
     }).toList();
+  }
+
+  CloudNote _mapToCloudNote(DatabaseNote n) {
+    return CloudNote(
+      documentId: n.id,
+      ownerUserId: n.userId.toString(),
+      contentJson: n.contentJson,
+      title: '',
+      lastModified: Timestamp.fromDate(n.lastModified),
+      category: n.category,
+      tags: n.tags,
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _notesSubscription?.cancel();
+    return super.close();
   }
 }

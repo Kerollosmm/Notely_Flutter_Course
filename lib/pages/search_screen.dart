@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_course_2/blocs/search/search_bloc.dart';
 import 'package:flutter_course_2/constants/app_colors.dart';
 import 'package:flutter_course_2/constants/app_dimensions.dart';
-import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
+import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_course_2/widgets/custom_text_field.dart';
 import 'package:flutter_course_2/widgets/note_card.dart';
 import 'package:flutter_course_2/widgets/category_chip.dart';
@@ -17,7 +17,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SearchBloc(FirebaseCloudStorage()),
+      create: (context) => SearchBloc(NoteRepository()),
       child: const _SearchScreenView(),
     );
   }
