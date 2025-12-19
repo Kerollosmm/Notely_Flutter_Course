@@ -5,7 +5,10 @@ import 'package:flutter_course_2/Auth_screens/accounAnalyz.dart';
 import 'package:flutter_course_2/constants/app_theme.dart';
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/firebase_options.dart';
-import 'package:flutter_course_2/page/create_update_note_view.dart';
+import 'package:flutter_course_2/pages/edit_screen.dart';
+import 'package:flutter_course_2/pages/home_screen.dart';
+import 'package:flutter_course_2/pages/search_screen.dart';
+import 'package:flutter_course_2/pages/settings_screen.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/firebase_auth_provider.dart';
@@ -65,8 +68,11 @@ class MyApp extends StatelessWidget {
                 home: const AccountAnalyze(),
                 // All named routes will also have access to the AuthBloc.
                 routes: {
-                  createOrUpdateNoteRoute: (context) =>
-                      const CreateUpdateNoteView(),
+                  createOrUpdateNoteRoute: (context) => const EditScreen(),
+                  homeRoute: (context) => const HomeScreen(),
+                  searchRoute: (context) => const SearchScreen(),
+                  settingsRoute: (context) => const SettingsScreen(),
+                  editNoteRoute: (context) => const EditScreen(), // Add alias
                 },
               );
             },

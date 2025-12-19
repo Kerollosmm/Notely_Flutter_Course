@@ -5,7 +5,7 @@ import 'package:flutter_course_2/Auth_screens/loginpage.dart';
 import 'package:flutter_course_2/Auth_screens/registerScreen.dart';
 import 'package:flutter_course_2/Auth_screens/veryfy.dart';
 import 'package:flutter_course_2/helpers/loading/loading_screen.dart';
-import 'package:flutter_course_2/page/note_view.dart';
+import 'package:flutter_course_2/pages/home_screen.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
@@ -39,7 +39,7 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
       },
       builder: (context, state) {
         if (state is AuthStateLoggedIn) {
-          return const NotesView();
+          return const HomeScreen();
         } else if (state is AuthStateNeedsVerification) {
           return const VerifyEmailView();
         } else if (state is AuthStateLoggedOut) {

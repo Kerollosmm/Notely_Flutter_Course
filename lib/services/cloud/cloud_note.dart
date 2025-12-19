@@ -9,6 +9,8 @@ class CloudNote {
   final String contentJson;
   final String title;
   final Timestamp lastModified;
+  final String category;
+  final List<String> tags;
 
   const CloudNote({
     required this.documentId,
@@ -16,6 +18,8 @@ class CloudNote {
     required this.contentJson,
     required this.title,
     required this.lastModified,
+    this.category = 'All Notes',
+    this.tags = const [],
   });
 
   CloudNote.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
@@ -26,5 +30,7 @@ class CloudNote {
           '', // Mapping textFieldName to contentJson for now
       title = snapshot.data()[titleFieldName] as String? ?? '',
       lastModified =
-          snapshot.data()['last_modified'] as Timestamp? ?? Timestamp.now();
+          snapshot.data()['last_modified'] as Timestamp? ?? Timestamp.now(),
+      category = snapshot.data()['category'] as String? ?? 'All Notes',
+      tags = List<String>.from(snapshot.data()['tags'] ?? []);
 }
