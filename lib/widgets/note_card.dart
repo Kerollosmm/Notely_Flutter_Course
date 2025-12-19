@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import '../services/cloud/cloud_note.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
@@ -46,18 +47,30 @@ class NoteCard extends StatelessWidget {
               children: [
                 if (note.category != 'All Notes')
                   _buildCategoryBadge(note.category),
-                Text(
-                  _formatDate(note.lastModified),
-                  style: AppTextStyles.bodyS,
+                Row(
+                  children: [
+                    if (note.syncStatus != null) _buildSyncIndicator(note.syncStatus!),
+                    SizedBox(width: 4.w),
+                    Text(
+                      _formatDate(note.lastModified),
+                      style: AppTextStyles.bodyS,
+                    ),
+                  ],
                 ),
               ],
             ),
             SizedBox(height: 12.h),
-            _buildHighlightedText(
-              note.title.isNotEmpty ? note.title : 'Untitled',
-              searchQuery,
-              AppTextStyles.h3,
-              2,
+            Hero(
+              tag: 'note_title_${note.documentId}',
+              child: Material(
+                color: Colors.transparent,
+                child: _buildHighlightedText(
+                  note.title.isNotEmpty ? note.title : 'Untitled',
+                  searchQuery,
+                  AppTextStyles.h3,
+                  2,
+                ),
+              ),
             ),
             SizedBox(height: 8.h),
             _buildHighlightedText(
@@ -164,6 +177,32 @@ class NoteCard extends StatelessWidget {
         '#$tag',
         style: AppTextStyles.tag.copyWith(color: Colors.grey.shade600),
       ),
+    );
+  }
+
+  Widget _buildSyncIndicator(SyncStatus status) {
+    IconData icon;
+    Color color;
+
+    switch (status) {
+      case SyncStatus.synced:
+        icon = Icons.cloud_done;
+        color = Colors.green;
+        break;
+      case SyncStatus.dirty:
+        icon = Icons.cloud_upload;
+        color = Colors.grey;
+        break;
+      case SyncStatus.deletedLocally:
+        icon = Icons.cloud_off;
+        color = Colors.red;
+        break;
+    }
+
+    return Icon(
+      icon,
+      size: 16.sp,
+      color: color,
     );
   }
 
