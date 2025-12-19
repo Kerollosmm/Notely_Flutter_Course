@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class NoteTitleField extends StatelessWidget {
   final TextEditingController controller;
@@ -6,11 +7,11 @@ class NoteTitleField extends StatelessWidget {
   final String hintText;
 
   const NoteTitleField({
-    Key? key,
+    super.key,
     required this.controller,
     this.focusNode,
     this.hintText = 'Title',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class NoteTitleField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       style: TextStyle(
-        fontSize: 24,
+        fontSize: 24.sp,
         fontWeight: FontWeight.bold,
         color: theme.colorScheme.onSurface,
       ),

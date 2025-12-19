@@ -6,12 +6,15 @@ import 'package:flutter_course_2/services/cloud/cloud_storage_exceptions.dart';
 class FirebaseCloudStorage {
   final notes = FirebaseFirestore.instance.collection('notes');
 
-  Stream<Iterable<CloudNote>> allNote({required String ownerUserId}) =>
-      notes.snapshots().map(
-            (event) => event.docs
-                .map((doc) => CloudNote.fromSnapshot(doc))
-                .where((note) => note.ownerUserId == ownerUserId),
-          );
+  // التعديل هنا: طلبنا من الداتابيز تبعت بس الملاحظات الخاصة بالمستخدم
+  Stream<Iterable<CloudNote>> allNote({required String ownerUserId}) {
+    return notes
+        .where(ownerFieldUserId, isEqualTo: ownerUserId) // الفلترة بقت هنا في الطلب نفسه
+        .snapshots()
+        .map((event) => event.docs
+            .map((doc) => CloudNote.fromSnapshot(doc))
+            .toList());
+  }
 
   Future<void> deleteNotes({required String documentId}) async {
     try {

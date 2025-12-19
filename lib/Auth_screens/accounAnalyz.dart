@@ -11,7 +11,7 @@ import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_state.dart';
 
 class AccountAnalyze extends StatefulWidget {
-  const AccountAnalyze({Key? key}) : super(key: key);
+  const AccountAnalyze({super.key});
 
   @override
   _AccountAnalyzeState createState() => _AccountAnalyzeState();
@@ -55,7 +55,7 @@ class _AccountAnalyzeState extends State<AccountAnalyze> {
 }
 
 class LaudingScreen extends StatelessWidget {
-  const LaudingScreen({Key? key}) : super(key: key);
+  const LaudingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

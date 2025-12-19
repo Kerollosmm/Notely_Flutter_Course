@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 Future<String?> showAddSectionDialog(
   BuildContext context,
@@ -19,12 +20,12 @@ Future<String?> showAddSectionDialog(
                 hintText: 'Enter new section name',
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             if (existingSections.isNotEmpty) ...[
               const Text('Or select an existing one:'),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Wrap(
-                spacing: 8.0,
+                spacing: 8.0.w,
                 children: existingSections
                     .map(
                       (section) => ActionChip(

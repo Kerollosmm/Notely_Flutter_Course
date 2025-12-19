@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 typedef DialogOptionBuilder<T> = Map<String, T?> Function();
 
@@ -18,14 +19,14 @@ Future<T?> showGenericDialog<T>({
           title,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 18,
+            fontSize: 18.sp,
           ),
         ),
         content: Padding(
-          padding: const EdgeInsets.only(top: 12),
+          padding: EdgeInsets.only(top: 12.h),
           child: Text(
             content,
-            style: TextStyle(fontSize: 15),
+            style: TextStyle(fontSize: 15.sp),
           ),
         ),
         actions: options.keys.map((optionTitle) {

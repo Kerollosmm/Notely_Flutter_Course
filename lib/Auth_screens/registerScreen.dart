@@ -1,7 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
@@ -11,6 +8,7 @@ import 'package:flutter_course_2/utailates/dialogs/error_dialog.dart';
 import 'package:flutter_course_2/widgets/Bottom.dart';
 import 'package:flutter_course_2/widgets/CustomTextField.dart';
 import 'package:flutter_course_2/widgets/auth_scaffold.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -134,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 CustomButton(
                   // Changed from Bottom to CustomButton
                   title: "Register",
@@ -147,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     );
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

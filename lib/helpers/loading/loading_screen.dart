@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_course_2/helpers/loading/loading_screen_controler.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoadingScreen {
   factory LoadingScreen() => _shared;
@@ -33,8 +34,8 @@ class LoadingScreen {
     required BuildContext context,
     required String text,
   }) {
-    final _text = StreamController<String>();
-    _text.add(text);
+    final text0 = StreamController<String>();
+    text0.add(text);
 
     final state = Overlay.of(context);
     final renderBox = context.findRenderObject() as RenderBox;
@@ -42,7 +43,7 @@ class LoadingScreen {
     final overlay = OverlayEntry(
       builder: (context) {
         return Material(
-          color: Colors.black.withAlpha(150),
+          color: Colors.black.withValues(alpha: 150/255), // Fixed alpha value 0-1
           child: Center(
             child: Container(
               constraints: BoxConstraints(
@@ -52,20 +53,20 @@ class LoadingScreen {
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(10.0.r),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0.r),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       const CircularProgressIndicator(),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       StreamBuilder(
-                        stream: _text.stream,
+                        stream: text0.stream,
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             return Text(
@@ -91,12 +92,12 @@ class LoadingScreen {
 
     return LoadingScreenController(
       () {
-        _text.close();
+        text0.close();
         overlay.remove();
         return true;
       },
       (text) {
-        _text.add(text);
+        text0.add(text);
         return true;
       },
     );

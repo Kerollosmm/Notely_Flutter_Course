@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppTheme {
   // Light Theme Colors
@@ -20,11 +21,11 @@ class AppTheme {
 
   // Typography
   static final TextTheme _textTheme = TextTheme(
-    headlineMedium: GoogleFonts.lato(fontSize: 22, fontWeight: FontWeight.bold), // AppBar titles
-    titleLarge: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.bold), // Note titles
-    titleMedium: GoogleFonts.lato(fontSize: 16), // Note subtitles/body
-    bodyMedium: GoogleFonts.lato(fontSize: 16),
-    labelLarge: GoogleFonts.lato(fontSize: 16, fontWeight: FontWeight.w700), // Buttons
+    headlineMedium: GoogleFonts.lato(fontSize: 22.sp, fontWeight: FontWeight.bold), // AppBar titles
+    titleLarge: GoogleFonts.lato(fontSize: 18.sp, fontWeight: FontWeight.bold), // Note titles
+    titleMedium: GoogleFonts.lato(fontSize: 16.sp), // Note subtitles/body
+    bodyMedium: GoogleFonts.lato(fontSize: 16.sp),
+    labelLarge: GoogleFonts.lato(fontSize: 16.sp, fontWeight: FontWeight.w700), // Buttons
   );
 
   static ThemeData get lightTheme {
@@ -35,13 +36,11 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: primaryLight,
         secondary: primaryLight,
-        background: backgroundLight,
         surface: surfaceLight,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onBackground: onBackgroundLight,
         onSurface: onSurfaceLight,
-        surfaceVariant: surfaceLight, // Used for TextField fill
+        surfaceContainerHighest: surfaceLight, // Used for TextField fill
         outline: Colors.grey,
       ),
       appBarTheme: AppBarTheme(
@@ -61,11 +60,11 @@ class AppTheme {
         labelStyle: const TextStyle(color: onBackgroundLight, fontWeight: FontWeight.bold),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(12.0.r),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(12.0.r),
           borderSide: const BorderSide(color: primaryLight, width: 1.5),
         ),
       ),
@@ -84,13 +83,11 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primaryDark,
         secondary: primaryDark,
-        background: backgroundDark,
         surface: surfaceDark,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onBackground: onBackgroundDark,
         onSurface: onSurfaceDark,
-        surfaceVariant: surfaceDark, // Used for TextField fill
+        surfaceContainerHighest: surfaceDark, // Used for TextField fill
         outline: Colors.grey,
       ),
       appBarTheme: AppBarTheme(
@@ -110,11 +107,11 @@ class AppTheme {
         labelStyle: const TextStyle(color: onBackgroundDark, fontWeight: FontWeight.bold),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(12.0.r),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(12.0.r),
           borderSide: const BorderSide(color: primaryDark, width: 1.5),
         ),
       ),

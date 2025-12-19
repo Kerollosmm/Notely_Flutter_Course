@@ -1,20 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart' show ReadContext;
 import 'package:flutter_course_2/constants/padge_routs.dart';
 import 'package:flutter_course_2/notes/note_list_view.dart';
 import 'package:flutter_course_2/page/setting_screen.dart';
 import 'package:flutter_course_2/services/auth/Auth_servies.dart';
-import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
-import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/utailates/dialogs/logout_dialog.dart';
 import 'package:flutter_course_2/notes/search_bar.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class NotesView extends StatefulWidget {
-  const NotesView({Key? key}) : super(key: key);
+  const NotesView({super.key});
 
   @override
   _NotesViewState createState() => _NotesViewState();
@@ -84,7 +81,7 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
         child: const Icon(Icons.add),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
             SearchBarWidget(
@@ -95,7 +92,7 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
                 setState(() {});
               },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Expanded(
               child: StreamBuilder<Iterable<CloudNote>>(
                 stream: _notesService.allNote(ownerUserId: userId),
@@ -133,19 +130,19 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.note_alt_outlined,
-                                size: 80, color: theme.colorScheme.onSurface.withOpacity(0.3)),
-                            const SizedBox(height: 16),
+                                size: 80.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+                            SizedBox(height: 16.h),
                             Text(
                               'No Notes Yet!',
                               style: TextStyle(
-                                  fontSize: 22, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                  fontSize: 22.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Text(
                               'Tap the "+" button to create your first note.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontSize: 16, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                  fontSize: 16.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                             ),
                           ],
                         ),
