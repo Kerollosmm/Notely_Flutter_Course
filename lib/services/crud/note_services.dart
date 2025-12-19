@@ -179,6 +179,60 @@ class NotesService {
     _notesStreamController.add(_notes);
   }
 
+  Future<void> batchUpdateSyncStatuses(
+    List<(String id, SyncStatus status, String? remoteId)> updates,
+  ) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final batch = db.batch();
+
+    for (final update in updates) {
+      final id = update.$1;
+      final status = update.$2;
+      final remoteId = update.$3;
+
+      final Map<String, dynamic> data = {syncStatusColumn: status.index};
+      if (remoteId != null) {
+        data[remoteIdColumn] = remoteId;
+      }
+      batch.update(noteTable, data, where: 'id = ?', whereArgs: [id]);
+    }
+
+    await batch.commit(noResult: true);
+    // Refresh cache completely or selectively
+    await _cacheNotes();
+  }
+
+  Future<void> batchUpsertNotes(List<DatabaseNote> notes) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final batch = db.batch();
+
+    for (final note in notes) {
+      final data = {
+        idColumn: note.id,
+        userIdColumn: note.userId,
+        contentJsonColumn: note.contentJson,
+        syncStatusColumn: note.syncStatus.index,
+        if (note.remoteId != null) remoteIdColumn: note.remoteId,
+        lastModifiedColumn: note.lastModified.millisecondsSinceEpoch,
+        categoryColumn: note.category,
+        tagsColumn: jsonEncode(note.tags),
+      };
+
+      // We use Insert with Conflict Replace usually, but here we want to update if exists.
+      // SQFLite insert with conflictAlgorithm: ConflictAlgorithm.replace
+      batch.insert(
+        noteTable,
+        data,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
+    await _cacheNotes();
+  }
+
   Future<Iterable<DatabaseNote>> getAllNotes() async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();

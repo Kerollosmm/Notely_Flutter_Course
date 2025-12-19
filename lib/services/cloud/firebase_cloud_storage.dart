@@ -24,10 +24,64 @@ class FirebaseCloudStorage {
     }
   }
 
+  WriteBatch getBatch() => FirebaseFirestore.instance.batch();
+
+  Future<void> commitBatch(WriteBatch batch) => batch.commit();
+
+  String generateNewDocId() => notes.doc().id;
+
+  void batchSet({
+    required WriteBatch batch,
+    required String documentId,
+    required String ownerUserId,
+    required String contentJson,
+    required Timestamp lastModified,
+    String title = '',
+    String category = 'All Notes',
+    List<String> tags = const [],
+  }) {
+    final docRef = notes.doc(documentId);
+    batch.set(docRef, {
+      ownerFieldUserId: ownerUserId,
+      textFieldName: contentJson,
+      titleFieldName: title,
+      'last_modified': lastModified,
+      'category': category,
+      'tags': tags,
+    });
+  }
+
+  void batchUpdate({
+    required WriteBatch batch,
+    required String documentId,
+    required String contentJson,
+    required Timestamp lastModified,
+    String title = '',
+    String category = 'All Notes',
+    List<String> tags = const [],
+  }) {
+    final docRef = notes.doc(documentId);
+    batch.update(docRef, {
+      textFieldName: contentJson,
+      titleFieldName: title,
+      'last_modified': lastModified,
+      'category': category,
+      'tags': tags,
+    });
+  }
+
+  void batchDelete({
+    required WriteBatch batch,
+    required String documentId,
+  }) {
+    final docRef = notes.doc(documentId);
+    batch.delete(docRef);
+  }
+
   Future<void> updateNotes({
     required String documentId,
     required String contentJson,
-    String title = '', // Optional for now
+    String title = '',
     required Timestamp lastModified,
     String category = 'All Notes',
     List<String> tags = const [],
@@ -83,11 +137,12 @@ class FirebaseCloudStorage {
     required Timestamp lastModified,
     String category = 'All Notes',
     List<String> tags = const [],
+    String title = '',
   }) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
       textFieldName: contentJson,
-      titleFieldName: '',
+      titleFieldName: title,
       'last_modified': lastModified,
       'category': category,
       'tags': tags,
@@ -97,7 +152,7 @@ class FirebaseCloudStorage {
       documentId: fitchNote.id,
       ownerUserId: ownerUserId,
       contentJson: contentJson,
-      title: '',
+      title: title,
       lastModified: lastModified,
       category: category,
       tags: tags,
