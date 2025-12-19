@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_course_2/services/auth/auth_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Events
 abstract class HomeEvent extends Equatable {
@@ -97,11 +95,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       _notesSubscription?.cancel();
       _notesSubscription = _noteRepository.allNotes.listen(
         (notes) {
-          final cloudNotes = notes.map((n) => _mapToCloudNote(n)).toList();
-          add(HomeNotesUpdated(cloudNotes));
+          // Repository now returns List<CloudNote>
+          add(HomeNotesUpdated(notes));
         },
         onError: (error) {
-          // Handle stream error
+          emit(HomeError(error.toString()));
         },
       );
     } catch (e) {
@@ -146,22 +144,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _onDeleteNote(HomeDeleteNote event, Emitter<HomeState> emit) async {
     try {
-      await _noteRepository.deleteNote(id: event.noteId);
+      await _noteRepository.deleteNote(noteId: event.noteId);
     } catch (e) {
       // Error handling
     }
-  }
-
-  CloudNote _mapToCloudNote(DatabaseNote n) {
-    return CloudNote(
-      documentId: n.id, // Use local UUID
-      ownerUserId: n.userId.toString(),
-      contentJson: n.contentJson,
-      title: '', // Title extracted from content by UI
-      lastModified: Timestamp.fromDate(n.lastModified),
-      category: n.category,
-      tags: n.tags,
-    );
   }
 
   @override

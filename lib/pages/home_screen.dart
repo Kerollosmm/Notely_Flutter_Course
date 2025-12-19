@@ -88,10 +88,7 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary, // Using primary color which is yellow?
-        // Actually prompt says "yellow circle with note icon", bottom bar might need styling.
-        // Prompt says: Bottom navigation bar (Home, Search, Saved, Settings)
-        // Default styling from theme should be used.
+        selectedItemColor: AppColors.primary,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
@@ -141,16 +138,32 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
         crossAxisCount: 2,
         mainAxisSpacing: AppDimensions.paddingM,
         crossAxisSpacing: AppDimensions.paddingM,
-        childAspectRatio: 0.75, // Adjust based on card content
+        childAspectRatio: 0.75,
       ),
       itemCount: notes.length,
       itemBuilder: (context, index) {
         final note = notes[index];
-        return NoteCard(
-          note: note,
-          onTap: () {
-            Navigator.pushNamed(context, createOrUpdateNoteRoute, arguments: note);
+        return Dismissible(
+          key: Key(note.documentId),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: EdgeInsets.only(right: 20.w),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            ),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          onDismissed: (direction) {
+            context.read<HomeBloc>().add(HomeDeleteNote(note.documentId));
           },
+          child: NoteCard(
+            note: note,
+            onTap: () {
+              Navigator.pushNamed(context, createOrUpdateNoteRoute, arguments: note);
+            },
+          ),
         );
       },
     );

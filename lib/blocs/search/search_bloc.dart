@@ -3,10 +3,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter_course_2/services/repository/note_repository.dart';
-import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/auth/auth_service.dart';
 import 'package:flutter_course_2/helpers/note_preview_generator.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Events
 abstract class SearchEvent extends Equatable {
@@ -83,7 +81,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       await _repository.getOrCreateUser(email: user.email);
 
       _notesSubscription = _repository.allNotes.listen((notes) {
-        _allNotesCache = notes.map((n) => _mapToCloudNote(n)).toList();
+        // Repository now returns List<CloudNote>
+        _allNotesCache = notes;
       });
     }
   }
@@ -132,18 +131,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
       return titleMatch || contentMatch;
     }).toList();
-  }
-
-  CloudNote _mapToCloudNote(DatabaseNote n) {
-    return CloudNote(
-      documentId: n.id,
-      ownerUserId: n.userId.toString(),
-      contentJson: n.contentJson,
-      title: '',
-      lastModified: Timestamp.fromDate(n.lastModified),
-      category: n.category,
-      tags: n.tags,
-    );
   }
 
   @override

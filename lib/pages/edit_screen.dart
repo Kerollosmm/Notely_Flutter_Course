@@ -38,7 +38,8 @@ class _EditScreenViewState extends State<_EditScreenView> {
   final QuillController _quillController = QuillController.basic();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _titleController = TextEditingController();
-  bool _isToolbarVisible = true;
+  final bool _isToolbarVisible = true; // Made final as requested
+  String? _heroTag;
 
   @override
   void initState() {
@@ -47,6 +48,17 @@ class _EditScreenViewState extends State<_EditScreenView> {
        final contentJson = jsonEncode(_quillController.document.toDelta().toJson());
        context.read<bloc.EditorBloc>().add(bloc.EditorContentChanged(contentJson));
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_heroTag == null) {
+      final routeArgs = ModalRoute.of(context)?.settings.arguments as CloudNote?;
+      if (routeArgs != null) {
+        _heroTag = 'note_title_${routeArgs.documentId}';
+      }
+    }
   }
 
   @override
@@ -81,6 +93,7 @@ class _EditScreenViewState extends State<_EditScreenView> {
 
         if (state is bloc.EditorLoaded) {
           return Scaffold(
+            resizeToAvoidBottomInset: true,
             appBar: AppBar(
               leading: BackButton(onPressed: () {
                  if (state.isDirty) {
@@ -92,7 +105,10 @@ class _EditScreenViewState extends State<_EditScreenView> {
                 IconButton(
                   icon: const Icon(Icons.share),
                   onPressed: () {
-                     Share.share('${state.title}\n\n${_quillController.document.toPlainText()}');
+                     SharePlus.instance.share(ShareParams(
+                        subject: state.title,
+                        text: '${state.title}\n\n${_quillController.document.toPlainText()}'
+                     ));
                   },
                 ),
                 TextButton(
@@ -116,7 +132,21 @@ class _EditScreenViewState extends State<_EditScreenView> {
                         'Last edited: ${_formatDate(state.lastEdited)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
-                      TextField(
+                      _heroTag != null ? Hero(
+                        tag: _heroTag!,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: TextField(
+                            controller: _titleController,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            decoration: const InputDecoration(
+                              hintText: 'Title',
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (val) => context.read<bloc.EditorBloc>().add(bloc.EditorTitleChanged(val)),
+                          ),
+                        ),
+                      ) : TextField(
                         controller: _titleController,
                         style: Theme.of(context).textTheme.headlineMedium,
                         decoration: const InputDecoration(
@@ -253,7 +283,7 @@ class _EditScreenViewState extends State<_EditScreenView> {
       width: 1.w,
       height: 24.h,
       margin: EdgeInsets.symmetric(horizontal: 8.w),
-      color: Colors.grey.withAlpha(50),
+      color: Colors.grey.withValues(alpha: 0.2), // Updated from withAlpha
     );
   }
 

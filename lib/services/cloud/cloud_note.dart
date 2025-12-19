@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_course_2/services/cloud/cloud_storage_constants.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 
 @immutable
 class CloudNote {
@@ -11,6 +12,7 @@ class CloudNote {
   final Timestamp lastModified;
   final String category;
   final List<String> tags;
+  final SyncStatus syncStatus;
 
   const CloudNote({
     required this.documentId,
@@ -20,6 +22,7 @@ class CloudNote {
     required this.lastModified,
     this.category = 'All Notes',
     this.tags = const [],
+    this.syncStatus = SyncStatus.synced,
   });
 
   CloudNote.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
@@ -27,10 +30,24 @@ class CloudNote {
       ownerUserId = snapshot.data()[ownerFieldUserId],
       contentJson =
           snapshot.data()[textFieldName] as String? ??
-          '', // Mapping textFieldName to contentJson for now
+          '',
       title = snapshot.data()[titleFieldName] as String? ?? '',
       lastModified =
           snapshot.data()['last_modified'] as Timestamp? ?? Timestamp.now(),
       category = snapshot.data()['category'] as String? ?? 'All Notes',
-      tags = List<String>.from(snapshot.data()['tags'] ?? []);
+      tags = List<String>.from(snapshot.data()['tags'] ?? []),
+      syncStatus = SyncStatus.synced; // Snapshots from cloud are always synced
+
+  factory CloudNote.fromDatabaseNote(DatabaseNote note) {
+    return CloudNote(
+      documentId: note.id,
+      ownerUserId: note.userId.toString(),
+      contentJson: note.contentJson,
+      title: '', // DatabaseNote doesn't have title, maybe extract from content or leave empty
+      lastModified: Timestamp.fromDate(note.lastModified),
+      category: note.category,
+      tags: note.tags,
+      syncStatus: note.syncStatus,
+    );
+  }
 }

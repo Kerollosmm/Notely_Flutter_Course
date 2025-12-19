@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/sync/sync_service.dart';
+import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 
 class NoteRepository {
   final NotesService _localDb;
@@ -12,7 +13,9 @@ class NoteRepository {
       _syncService = SyncService();
   factory NoteRepository() => _shared;
 
-  Stream<List<DatabaseNote>> get allNotes => _localDb.allNotes;
+  Stream<List<CloudNote>> get allNotes => _localDb.allNotes.map(
+        (notes) => notes.map((note) => CloudNote.fromDatabaseNote(note)).toList(),
+      );
 
   Future<void> open() async {
     await _localDb.open();
@@ -47,8 +50,8 @@ class NoteRepository {
     );
   }
 
-  Future<void> deleteNote({required String id}) async {
-    await _localDb.deleteNote(id: id);
+  Future<void> deleteNote({required String noteId}) async {
+    await _localDb.deleteNote(id: noteId);
   }
 
   Future<void> sync({required String userEmail, required String userUid}) =>
