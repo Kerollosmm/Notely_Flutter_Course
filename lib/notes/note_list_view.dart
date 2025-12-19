@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/utailates/dialogs/delete_dialog.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-typedef NoteCallback = void Function(CloudNote note);
+typedef NoteCallback = void Function(DatabaseNote note);
 
 class NoteListView extends StatelessWidget {
-  final List<CloudNote> notes;
+  final List<DatabaseNote> notes;
   final NoteCallback onDeleteNote;
   final NoteCallback onTap;
 
@@ -41,7 +41,13 @@ class NoteListView extends StatelessWidget {
       itemCount: notes.length,
       itemBuilder: (context, index) {
         final note = notes[index];
-        final plainText = _getPlainText(note.text);
+        final plainText = _getPlainText(note.contentJson);
+        // DatabaseNote doesn't have a title field, so we use the first few words of content or "Untitled"
+        final title = plainText.isNotEmpty
+            ? (plainText.length > 20
+                  ? '${plainText.substring(0, 20)}...'
+                  : plainText)
+            : "Untitled Note";
 
         return GestureDetector(
           onTap: () => onTap(note),
@@ -71,10 +77,17 @@ class NoteListView extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(8.r),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark ? Colors.blue.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.1),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.blue.withValues(alpha: 0.2)
+                        : Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Icon(Icons.article_outlined, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.blue.shade800),
+                  child: Icon(
+                    Icons.article_outlined,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.blue.shade800,
+                  ),
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
@@ -82,7 +95,7 @@ class NoteListView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        note.title.isEmpty ? "Untitled Note" : note.title,
+                        title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -98,7 +111,9 @@ class NoteListView extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                     ],

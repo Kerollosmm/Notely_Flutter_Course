@@ -23,13 +23,17 @@ class NoteEditorField extends StatelessWidget {
       child: CustomPaint(
         painter: NoteBackgroundPainter(
           style: backgroundStyle,
-          lineColor: theme.dividerColor.withValues(alpha: 0.5), // Use theme color
+          lineColor: theme.dividerColor.withValues(
+            alpha: 0.5,
+          ), // Use theme color
           lineSpacing: 24.h, // Responsive line spacing
         ),
         child: Container(
           decoration: BoxDecoration(
             // Ensure cardColor is only applied if plain, or painter handles background
-            color: backgroundStyle == NoteBackgroundStyle.plain ? theme.cardColor : Colors.transparent,
+            color: backgroundStyle == NoteBackgroundStyle.plain
+                ? theme.cardColor
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: theme.dividerColor),
           ),
@@ -38,7 +42,7 @@ class NoteEditorField extends StatelessWidget {
             child: quill.QuillEditor.basic(
               controller: controller,
               config: const quill.QuillEditorConfig(
-                 expands: true, // Important for CustomPaint to get correct size
+                expands: true, // Important for CustomPaint to get correct size
               ),
             ),
           ),

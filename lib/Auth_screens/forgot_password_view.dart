@@ -43,24 +43,22 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           }
           if (state.exception != null) {
             // Show an error dialog if there was an exception.
-            await showErrorDialog(context,
-                'We could not process your request. Please make sure you are a registered user.');
+            await showErrorDialog(
+              context,
+              'We could not process your request. Please make sure you are a registered user.',
+            );
           }
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Forgot Password'),
-        ),
+        appBar: AppBar(title: const Text('Forgot Password')),
         body: Padding(
           padding: EdgeInsets.all(16.r),
           // Use a BlocBuilder to show a loading indicator while the request is in progress.
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
               return SingleChildScrollView(
                 child: Column(
@@ -76,12 +74,15 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                       hintText: 'Your email address',
                     ),
                     SizedBox(height: 16.h),
-                    CustomButton(title: 'Send me password reset link', ontap: () {
-                      // Dispatch the forgot password event with the entered email.
-                      context
-                          .read<AuthBloc>()
-                          .add(AuthEventForgotPassword(email: _controller.text));
-                    }),
+                    CustomButton(
+                      title: 'Send me password reset link',
+                      ontap: () {
+                        // Dispatch the forgot password event with the entered email.
+                        context.read<AuthBloc>().add(
+                          AuthEventForgotPassword(email: _controller.text),
+                        );
+                      },
+                    ),
                     SizedBox(height: 16.h),
 
                     TextButton(

@@ -24,7 +24,7 @@ class FirebaseAuthProvider implements AuthProvider {
       // Add retry logic for reCAPTCHA errors
       int retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -44,9 +44,9 @@ class FirebaseAuthProvider implements AuthProvider {
             throw EmailAlreadyInUseAuthExceptions();
           } else if (e.code == 'invalid-email') {
             throw InvalidEmailAuthExceptions();
-          } else if (e.code == 'network-request-failed' || 
-                     e.message?.contains('network error') == true ||
-                     e.message?.contains('unreachable host') == true) {
+          } else if (e.code == 'network-request-failed' ||
+              e.message?.contains('network error') == true ||
+              e.message?.contains('unreachable host') == true) {
             retryCount++;
             if (retryCount >= maxRetries) {
               throw GenericAuthExceptions();
@@ -84,7 +84,7 @@ class FirebaseAuthProvider implements AuthProvider {
       // Add retry logic for reCAPTCHA errors
       int retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -102,9 +102,9 @@ class FirebaseAuthProvider implements AuthProvider {
             throw UserNotFoundAuthExceptions();
           } else if (e.code == 'wrong-password') {
             throw WrongPasswordAuthException();
-          } else if (e.code == 'network-request-failed' || 
-                     e.message?.contains('network error') == true ||
-                     e.message?.contains('unreachable host') == true) {
+          } else if (e.code == 'network-request-failed' ||
+              e.message?.contains('network error') == true ||
+              e.message?.contains('unreachable host') == true) {
             retryCount++;
             if (retryCount >= maxRetries) {
               throw GenericAuthExceptions();
@@ -143,7 +143,7 @@ class FirebaseAuthProvider implements AuthProvider {
     }
   }
 
- @override
+  @override
   Future<void> sendPasswordReset({required String toEmail}) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: toEmail);
@@ -161,4 +161,3 @@ class FirebaseAuthProvider implements AuthProvider {
     }
   }
 }
-

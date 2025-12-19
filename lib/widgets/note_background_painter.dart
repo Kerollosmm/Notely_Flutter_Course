@@ -41,7 +41,7 @@ class NoteBackgroundPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant NoteBackgroundPainter oldDelegate) {
     return oldDelegate.style != style ||
-           oldDelegate.lineColor != lineColor ||
-           oldDelegate.lineSpacing != lineSpacing;
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.lineSpacing != lineSpacing;
   }
 }

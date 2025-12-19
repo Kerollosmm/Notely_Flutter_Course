@@ -1,8 +1,4 @@
-enum NoteBackgroundStyle {
-  plain,
-  ruledLines,
-  gridLines,
-}
+enum NoteBackgroundStyle { plain, ruledLines, gridLines }
 
 // Helper to convert enum to string and back for storage
 String noteBackgroundStyleToString(NoteBackgroundStyle style) {

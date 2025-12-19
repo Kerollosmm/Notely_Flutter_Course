@@ -28,12 +28,11 @@ class RegisterCard extends StatelessWidget {
         height: 600.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
-          color: Colors.white
-              .withValues(alpha: 0.5), // adjust opacity to see the blur effect
+          color: Colors.white.withValues(
+            alpha: 0.5,
+          ), // adjust opacity to see the blur effect
         ),
-        child: Column(
-          children: [],
-        ),
+        child: Column(children: []),
       ),
     );
   }

@@ -16,13 +16,10 @@ import 'package:flutter_course_2/providers/theme_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 // This import was causing an error because the package wasn't installed. We'll remove it for now and handle dependencies properly.
 
-
 void main() async {
   // Ensure that the Flutter bindings are initialized before calling Firebase.
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -35,11 +32,11 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(FirebaseAuthProvider())..add(const AuthEventInitialize()),
+          create: (context) =>
+              AuthBloc(FirebaseAuthProvider())
+                ..add(const AuthEventInitialize()),
         ),
-        ChangeNotifierProvider(
-          create: (_) => ThemeNotifier(ThemeMode.system),
-        ),
+        ChangeNotifierProvider(create: (_) => ThemeNotifier(ThemeMode.system)),
       ],
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
@@ -68,7 +65,8 @@ class MyApp extends StatelessWidget {
                 home: const AccountAnalyze(),
                 // All named routes will also have access to the AuthBloc.
                 routes: {
-                  createOrUpdateNoteRoute: (context) => const CreateUpdateNoteView(),
+                  createOrUpdateNoteRoute: (context) =>
+                      const CreateUpdateNoteView(),
                 },
               );
             },

@@ -5,10 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class NoteToolbar extends StatefulWidget {
   final quill.QuillController quillController;
 
-  const NoteToolbar({
-    super.key,
-    required this.quillController,
-  });
+  const NoteToolbar({super.key, required this.quillController});
 
   @override
   _NoteToolbarState createState() => _NoteToolbarState();
@@ -60,7 +57,8 @@ class _NoteToolbarState extends State<NoteToolbar>
   Widget _buildToolbarButton({
     required IconData icon,
     required VoidCallback onPressed,
-    required bool isActive, // Determined by checking QuillController's current selection format
+    required bool
+    isActive, // Determined by checking QuillController's current selection format
     String? tooltip,
   }) {
     final theme = Theme.of(context);
@@ -69,7 +67,9 @@ class _NoteToolbarState extends State<NoteToolbar>
       height: 40.w, // Square button
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       child: Material(
-        color: isActive ? theme.colorScheme.primaryContainer : Colors.transparent,
+        color: isActive
+            ? theme.colorScheme.primaryContainer
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(20.r),
         child: InkWell(
           borderRadius: BorderRadius.circular(20.r),
@@ -77,7 +77,9 @@ class _NoteToolbarState extends State<NoteToolbar>
           child: Icon(
             icon,
             size: 20.sp,
-            color: isActive ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
+            color: isActive
+                ? theme.colorScheme.onPrimaryContainer
+                : theme.colorScheme.onSurface,
           ),
         ),
       ),
@@ -107,45 +109,57 @@ class _NoteToolbarState extends State<NoteToolbar>
           _buildToolbarButton(
             icon: Icons.format_bold,
             tooltip: 'Bold',
-            onPressed: () => widget.quillController.formatSelection(quill.Attribute.bold),
+            onPressed: () =>
+                widget.quillController.formatSelection(quill.Attribute.bold),
             isActive: quillAttrs.containsKey(quill.Attribute.bold.key),
           ),
           _buildDivider(),
           _buildToolbarButton(
             icon: Icons.format_italic,
             tooltip: 'Italic',
-            onPressed: () => widget.quillController.formatSelection(quill.Attribute.italic),
+            onPressed: () =>
+                widget.quillController.formatSelection(quill.Attribute.italic),
             isActive: quillAttrs.containsKey(quill.Attribute.italic.key),
           ),
           _buildDivider(),
           _buildToolbarButton(
             icon: Icons.format_underlined,
             tooltip: 'Underline',
-            onPressed: () => widget.quillController.formatSelection(quill.Attribute.underline),
+            onPressed: () => widget.quillController.formatSelection(
+              quill.Attribute.underline,
+            ),
             isActive: quillAttrs.containsKey(quill.Attribute.underline.key),
           ),
           _buildDivider(),
           _buildToolbarButton(
             icon: Icons.format_list_bulleted,
             tooltip: 'Bulleted List',
-            onPressed: () => widget.quillController.formatSelection(quill.Attribute.ul),
-            isActive: quillAttrs.containsKey(quill.Attribute.list.key) &&
-                        quillAttrs[quill.Attribute.list.key]?.value == 'bullet',
+            onPressed: () =>
+                widget.quillController.formatSelection(quill.Attribute.ul),
+            isActive:
+                quillAttrs.containsKey(quill.Attribute.list.key) &&
+                quillAttrs[quill.Attribute.list.key]?.value == 'bullet',
           ),
           _buildDivider(),
           _buildToolbarButton(
             icon: Icons.check_box_outline_blank, // Or Icons.check_box
             tooltip: 'Checklist',
-            onPressed: () => widget.quillController.formatSelection(quill.Attribute.checked),
-            isActive: (quillAttrs[quill.Attribute.list.key]?.value == quill.Attribute.unchecked.value ||
-                        quillAttrs[quill.Attribute.list.key]?.value == quill.Attribute.checked.value),
+            onPressed: () =>
+                widget.quillController.formatSelection(quill.Attribute.checked),
+            isActive:
+                (quillAttrs[quill.Attribute.list.key]?.value ==
+                    quill.Attribute.unchecked.value ||
+                quillAttrs[quill.Attribute.list.key]?.value ==
+                    quill.Attribute.checked.value),
           ),
           const Spacer(),
           _buildToolbarButton(
-            icon: _isToolbarExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+            icon: _isToolbarExpanded
+                ? Icons.keyboard_arrow_up
+                : Icons.keyboard_arrow_down,
             tooltip: _isToolbarExpanded ? 'Collapse Toolbar' : 'Expand Toolbar',
             onPressed: _toggleToolbar,
-            isActive: false, 
+            isActive: false,
           ),
         ],
       ),
@@ -154,7 +168,8 @@ class _NoteToolbarState extends State<NoteToolbar>
 
   Widget _buildExpandedToolbar() {
     final theme = Theme.of(context);
-    return Container( // No AnimatedSize needed here as the parent will handle it or it's fixed size
+    return Container(
+      // No AnimatedSize needed here as the parent will handle it or it's fixed size
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12.r),
@@ -239,7 +254,9 @@ class _NoteToolbarState extends State<NoteToolbar>
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      child: _isToolbarExpanded ? _buildExpandedToolbar() : _buildMinimalToolbar(),
+      child: _isToolbarExpanded
+          ? _buildExpandedToolbar()
+          : _buildMinimalToolbar(),
     );
   }
 }

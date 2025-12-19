@@ -36,27 +36,36 @@ class _CustomTextFieldState extends State<CustomTextField> {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h), // Reduced margin, changed to padding
+      padding: EdgeInsets.symmetric(
+        vertical: 8.h,
+      ), // Reduced margin, changed to padding
       child: TextFormField(
         controller: widget.controller,
         obscureText: widget.isPassword ? _obscureText : false,
         keyboardType: widget.keyboardType,
         validator: widget.validator,
         onTap: widget.onTap,
-        style: textTheme.bodyLarge, // Use theme's bodyLarge style for input text
+        style:
+            textTheme.bodyLarge, // Use theme's bodyLarge style for input text
         decoration: InputDecoration(
           labelText: widget.labelText, // Use labelText
           hintText: widget.hintText,
           prefixIcon: widget.prefixIcon != null
               ? IconTheme(
-                  data: IconTheme.of(context).copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                  data: IconTheme.of(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
                   child: widget.prefixIcon!,
                 )
               : null,
           suffixIcon: widget.isPassword
               ? IconButton(
                   icon: Icon(
-                    _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    _obscureText
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                   ),
                   onPressed: () {
                     setState(() {

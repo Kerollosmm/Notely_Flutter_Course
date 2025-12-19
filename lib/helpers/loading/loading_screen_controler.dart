@@ -4,9 +4,9 @@ typedef CloseLoadingScreen = bool Function();
 typedef UpdateLoadingScreen = bool Function(String Text);
 
 @immutable
-class LoadingScreenController{
+class LoadingScreenController {
   final CloseLoadingScreen close;
   final UpdateLoadingScreen update;
 
- const LoadingScreenController(this.close, this.update);
+  const LoadingScreenController(this.close, this.update);
 }

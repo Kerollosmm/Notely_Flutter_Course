@@ -29,12 +29,10 @@ class CustomButton extends StatelessWidget {
     final ButtonStyle baseStyle = ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF1976D2), // A nice, solid blue color
       foregroundColor: Colors.white, // White text for good contrast
-      shape: const StadiumBorder(), // This creates the fully rounded "pill" shape
+      shape:
+          const StadiumBorder(), // This creates the fully rounded "pill" shape
       elevation: 0, // No shadow, for a flatter look like in the image
-      textStyle: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 16.sp,
-      ),
+      textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
     );
 
     // Get the button style from the application's theme.
@@ -44,10 +42,16 @@ class CustomButton extends StatelessWidget {
     // Define overrides from the widget's constructor parameters.
     // This allows for specific overrides on a per-button basis.
     final ButtonStyle overrideStyle = ButtonStyle(
-      backgroundColor: backgroundColor != null ? WidgetStateProperty.all(backgroundColor) : null,
-      foregroundColor: textColor != null ? WidgetStateProperty.all(textColor) : null,
+      backgroundColor: backgroundColor != null
+          ? WidgetStateProperty.all(backgroundColor)
+          : null,
+      foregroundColor: textColor != null
+          ? WidgetStateProperty.all(textColor)
+          : null,
       fixedSize: (width != null || height != null)
-          ? WidgetStateProperty.all(Size(width ?? double.infinity, height ?? 48.h))
+          ? WidgetStateProperty.all(
+              Size(width ?? double.infinity, height ?? 48.h),
+            )
           : null,
     );
 
@@ -55,7 +59,9 @@ class CustomButton extends StatelessWidget {
     // 1. Start with the base style.
     // 2. Merge the theme style over it (theme wins over base).
     // 3. Merge the override style over that (constructor params win over all).
-    final ButtonStyle finalStyle = baseStyle.merge(themeStyle).merge(overrideStyle);
+    final ButtonStyle finalStyle = baseStyle
+        .merge(themeStyle)
+        .merge(overrideStyle);
 
     return SizedBox(
       width: width ?? double.infinity, // Use provided width or expand to fill

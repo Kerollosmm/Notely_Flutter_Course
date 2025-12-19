@@ -11,17 +11,11 @@ class LoadingScreen {
 
   LoadingScreenController? controller;
 
-  void show({
-    required BuildContext context, 
-    required String text,
-  }){
+  void show({required BuildContext context, required String text}) {
     if (controller?.update(text) ?? false) {
       return;
     } else {
-      controller = showOverLay(
-        context: context,
-        text: text,
-      );
+      controller = showOverLay(context: context, text: text);
     }
   }
 
@@ -43,7 +37,9 @@ class LoadingScreen {
     final overlay = OverlayEntry(
       builder: (context) {
         return Material(
-          color: Colors.black.withValues(alpha: 150/255), // Fixed alpha value 0-1
+          color: Colors.black.withValues(
+            alpha: 150 / 255,
+          ), // Fixed alpha value 0-1
           child: Center(
             child: Container(
               constraints: BoxConstraints(
