@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_course_2/blocs/editor/editor_bloc.dart' as bloc;
@@ -9,6 +10,7 @@ import 'package:flutter_course_2/services/repository/note_repository.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditScreen extends StatelessWidget {
   final CloudNote? note;
@@ -38,7 +40,9 @@ class _EditScreenViewState extends State<_EditScreenView> {
   final QuillController _quillController = QuillController.basic();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _titleController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   bool _isToolbarVisible = true;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -54,7 +58,18 @@ class _EditScreenViewState extends State<_EditScreenView> {
     _quillController.dispose();
     _focusNode.dispose();
     _titleController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final index = _quillController.selection.baseOffset;
+      final length = _quillController.selection.extentOffset - index;
+      _quillController.replaceText(index, length, BlockEmbed.image(image.path), null);
+      _quillController.moveCursorToPosition(index + 1);
+    }
   }
 
   @override
@@ -80,79 +95,98 @@ class _EditScreenViewState extends State<_EditScreenView> {
         }
 
         if (state is bloc.EditorLoaded) {
-          return Scaffold(
-            appBar: AppBar(
-              leading: BackButton(onPressed: () {
-                 if (state.isDirty) {
-                   context.read<bloc.EditorBloc>().add(bloc.EditorSaveNote());
-                 }
-                 Navigator.pop(context);
-              }),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.share),
+          return PopScope(
+            canPop: true, // Allow pop, but we handle save in onPopInvoked logic if we used false.
+            // Since we want to auto-save and then pop, we can use onPopInvoked with canPop=true.
+            onPopInvoked: (didPop) {
+              // Note: onPopInvoked is called AFTER the pop if canPop is true.
+              // So we just save here.
+              if (state.isDirty) {
+                 context.read<bloc.EditorBloc>().add(bloc.EditorSaveNote());
+              }
+            },
+            child: Scaffold(
+              resizeToAvoidBottomInset: true,
+              appBar: AppBar(
+                leading: BackButton(
                   onPressed: () {
-                     Share.share('${state.title}\n\n${_quillController.document.toPlainText()}');
-                  },
+                    if (state.isDirty) {
+                      context.read<bloc.EditorBloc>().add(bloc.EditorSaveNote());
+                    }
+                    Navigator.pop(context);
+                  }
                 ),
-                TextButton(
-                  onPressed: () {
-                     context.read<bloc.EditorBloc>().add(bloc.EditorSaveNote());
-                     Navigator.pop(context);
-                  },
-                  child: Text('Done', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                ),
-                SizedBox(width: 8.w),
-              ],
-            ),
-            body: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(AppDimensions.paddingM),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Last edited: ${_formatDate(state.lastEdited)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                      ),
-                      Hero(
-                        tag: 'note_title_${state.originalNote?.documentId ?? 'new'}',
-                        child: Material(
-                          color: Colors.transparent,
-                          child: TextField(
-                            controller: _titleController,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                            decoration: const InputDecoration(
-                              hintText: 'Title',
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (val) => context.read<bloc.EditorBloc>().add(bloc.EditorTitleChanged(val)),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.share),
+                    onPressed: () {
+                       Share.share('${state.title}\n\n${_quillController.document.toPlainText()}');
+                    },
+                  ),
+                  TextButton(
+                    onPressed: () {
+                       context.read<bloc.EditorBloc>().add(bloc.EditorSaveNote());
+                       Navigator.pop(context);
+                    },
+                    child: Text('Done', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                  ),
+                  SizedBox(width: 8.w),
+                ],
+              ),
+              body: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(AppDimensions.paddingM),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Last edited: ${_formatDate(state.lastEdited)}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                              ),
+                              Hero(
+                                tag: 'note_title_${state.originalNote?.documentId ?? 'new'}',
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: TextField(
+                                    controller: _titleController,
+                                    style: Theme.of(context).textTheme.headlineMedium,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Title',
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (val) => context.read<bloc.EditorBloc>().add(bloc.EditorTitleChanged(val)),
+                                  ),
+                                ),
+                              ),
+                              _buildTags(state.tags, context),
+                            ],
                           ),
                         ),
-                      ),
-                      _buildTags(state.tags, context),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: QuillEditor.basic(
-                    controller: _quillController,
-                    config: const QuillEditorConfig(
-                      placeholder: 'Start writing...',
-                      padding: EdgeInsets.all(16),
+                        Expanded(
+                          child: QuillEditor.basic(
+                            controller: _quillController,
+                            config: const QuillEditorConfig(
+                              placeholder: 'Start writing...',
+                              padding: EdgeInsets.only(left: 16, right: 16, bottom: 60), // Extra bottom padding for toolbar
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-
-                // Toolbar attached to keyboard or bottom
-                if (_isToolbarVisible)
-                  Padding(
-                    padding: MediaQuery.of(context).viewInsets, // Adjust for keyboard
-                    child: _buildCustomToolbar(),
-                  ),
-              ],
+                  if (_isToolbarVisible)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildCustomToolbar(),
+                    ),
+                ],
+              ),
             ),
           );
         }
@@ -167,11 +201,16 @@ class _EditScreenViewState extends State<_EditScreenView> {
       spacing: 8.w,
       children: [
         ...tags.map((tag) => Chip(
-          label: Text(tag),
+          backgroundColor: const Color(0xFFF5FFFA), // Mint Cream
+          label: Text(tag, style: const TextStyle(color: Colors.black87)),
+          deleteIcon: const Icon(Icons.close, size: 16, color: Colors.black54),
           onDeleted: () => context.read<bloc.EditorBloc>().add(bloc.EditorRemoveTag(tag)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r), side: BorderSide.none),
         )),
         ActionChip(
-          label: const Icon(Icons.add, size: 16),
+          backgroundColor: const Color(0xFFF5FFFA),
+          label: const Icon(Icons.add, size: 16, color: Colors.black87),
+           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r), side: BorderSide.none),
           onPressed: () {
              _showAddTagDialog(context);
           },
@@ -185,7 +224,7 @@ class _EditScreenViewState extends State<_EditScreenView> {
     showDialog(context: context, builder: (ctx) {
       return AlertDialog(
         title: const Text('Add Tag'),
-        content: TextField(controller: controller, autofocus: true),
+        content: TextField(controller: controller, autofocus: true, decoration: const InputDecoration(hintText: 'Tag name')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(onPressed: () {
@@ -207,35 +246,42 @@ class _EditScreenViewState extends State<_EditScreenView> {
   Widget _buildCustomToolbar() {
     final theme = Theme.of(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(24.r), topRight: Radius.circular(24.r)),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(16.r), topRight: Radius.circular(16.r)),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 8.r,
+            blurRadius: 4.r,
             offset: Offset(0, -2.h),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildToolbarButton(icon: Icons.format_bold, attribute: Attribute.bold, tooltip: 'Bold'),
-            _buildToolbarButton(icon: Icons.format_italic, attribute: Attribute.italic, tooltip: 'Italic'),
-            _buildToolbarButton(icon: Icons.format_underlined, attribute: Attribute.underline, tooltip: 'Underline'),
-            _buildVerticalDivider(),
-            _buildToolbarButton(icon: Icons.format_list_bulleted, attribute: Attribute.ul, tooltip: 'Bullet List'),
-            _buildToolbarButton(icon: Icons.format_list_numbered, attribute: Attribute.ol, tooltip: 'Numbered List'),
-            _buildToolbarButton(icon: Icons.check_box_outline_blank, attribute: Attribute.unchecked, tooltip: 'Checkbox'),
-            _buildVerticalDivider(),
-            _buildColorButton(),
-            _buildBackgroundColorButton(),
-            _buildClearFormattingButton(),
-          ],
+      child: SafeArea( // Ensure it respects bottom safe area (home indicator)
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildToolbarButton(icon: Icons.format_bold, attribute: Attribute.bold, tooltip: 'Bold'),
+              _buildToolbarButton(icon: Icons.format_italic, attribute: Attribute.italic, tooltip: 'Italic'),
+              _buildToolbarButton(icon: Icons.format_underlined, attribute: Attribute.underline, tooltip: 'Underline'),
+              _buildVerticalDivider(),
+              _buildToolbarButton(icon: Icons.format_list_bulleted, attribute: Attribute.ul, tooltip: 'Bullet List'),
+              _buildToolbarButton(icon: Icons.format_list_numbered, attribute: Attribute.ol, tooltip: 'Numbered List'),
+              _buildToolbarButton(icon: Icons.check_box_outline_blank, attribute: Attribute.unchecked, tooltip: 'Checkbox'),
+              _buildVerticalDivider(),
+              _buildColorButton(),
+              _buildBackgroundColorButton(),
+              IconButton(
+                 icon: const Icon(Icons.image_outlined),
+                 onPressed: _pickImage,
+                 tooltip: 'Insert Image',
+              ),
+              _buildClearFormattingButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -312,6 +358,7 @@ class _EditScreenViewState extends State<_EditScreenView> {
   Widget _buildColorOption(Color color, bool isBackground) {
     return GestureDetector(
       onTap: () {
+        // Use hex string for color to ensure compatibility
         final hex = '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
         final attribute = isBackground ? Attribute.background : Attribute.color;
         _quillController.formatSelection(Attribute.clone(attribute, hex));

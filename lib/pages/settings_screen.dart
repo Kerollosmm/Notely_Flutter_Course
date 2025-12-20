@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,9 +10,49 @@ import 'package:flutter_course_2/services/auth/bloc/auth_bloc.dart';
 import 'package:flutter_course_2/services/auth/bloc/auth_events.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_course_2/providers/theme_notifier.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String? _profileImagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileImage();
+  }
+
+  Future<void> _loadProfileImage() async {
+    final user = AuthService.firebase().currentUser;
+    if (user != null) {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _profileImagePath = prefs.getString('profile_image_${user.id}');
+      });
+    }
+  }
+
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final user = AuthService.firebase().currentUser;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profile_image_${user.id}', image.path);
+        setState(() {
+          _profileImagePath = image.path;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,12 +167,18 @@ class SettingsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30.r,
-            backgroundColor: AppColors.primary,
-            child: Text(
-              user?.email.substring(0, 1).toUpperCase() ?? 'U',
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          GestureDetector(
+            onTap: _pickProfileImage,
+            child: CircleAvatar(
+              radius: 30.r,
+              backgroundColor: AppColors.primary,
+              backgroundImage: _profileImagePath != null ? FileImage(File(_profileImagePath!)) : null,
+              child: _profileImagePath == null
+                  ? Text(
+                      user?.email.substring(0, 1).toUpperCase() ?? 'U',
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    )
+                  : null,
             ),
           ),
           SizedBox(width: 16.w),
