@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
 
@@ -35,9 +34,9 @@ class SyncService {
     NotesService? localDb,
     FirebaseCloudStorage? remoteDb,
     Connectivity? connectivity,
-  })  : _localDb = localDb ?? NotesService(),
-        _remoteDb = remoteDb ?? FirebaseCloudStorage(),
-        _connectivity = connectivity ?? Connectivity();
+  }) : _localDb = localDb ?? NotesService(),
+       _remoteDb = remoteDb ?? FirebaseCloudStorage(),
+       _connectivity = connectivity ?? Connectivity();
 
   Future<void> sync({
     required String userEmail,

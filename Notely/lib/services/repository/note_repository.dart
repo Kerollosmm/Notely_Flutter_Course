@@ -7,10 +7,7 @@ class NoteRepository {
   final SyncService _syncService;
 
   static NoteRepository? _shared;
-  factory NoteRepository({
-    NotesService? localDb,
-    SyncService? syncService,
-  }) {
+  factory NoteRepository({NotesService? localDb, SyncService? syncService}) {
     if (localDb != null || syncService != null) {
       return NoteRepository._sharedInstance(
         localDb: localDb,
@@ -23,8 +20,8 @@ class NoteRepository {
   NoteRepository._sharedInstance({
     NotesService? localDb,
     SyncService? syncService,
-  })  : _localDb = localDb ?? NotesService(),
-        _syncService = syncService ?? SyncService();
+  }) : _localDb = localDb ?? NotesService(),
+       _syncService = syncService ?? SyncService();
 
   Stream<List<DatabaseNote>> get allNotes => _localDb.allNotes;
 

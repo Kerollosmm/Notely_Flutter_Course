@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_course_2/extensions/list/filter.dart';
@@ -150,7 +149,7 @@ class NotesService {
     // Refresh cache (optional, or just for this note)
     // For performance, maybe don't refresh entire list every time if batching.
     // But consistent with current architecture:
-    final note = await getNote(
+    await getNote(
       id: id,
     ); // This refreshes the cache for this note
   }

@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
 import 'package:flutter/services.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,12 +16,13 @@ void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
-  const MethodChannel channel =
-      MethodChannel('plugins.flutter.io/path_provider');
+  const MethodChannel channel = MethodChannel(
+    'plugins.flutter.io/path_provider',
+  );
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-    return '.';
-  });
+        return '.';
+      });
 
   group('Favorite Notes Service Tests', () {
     late NotesService notesService;
@@ -35,16 +35,18 @@ void main() {
     });
 
     test('Local: favoriteNotes stream should filter notes correctly', () async {
-      final user = await notesService.getOrCreateUser(email: 'test@example.com');
+      final user = await notesService.getOrCreateUser(
+        email: 'test@example.com',
+      );
       final note1 = await notesService.createNote(owner: user);
-      
+
       // Initially empty
       var favorites = await notesService.favoriteNotes.first;
       expect(favorites.length, 0);
-      
+
       // Toggle favorite
       await notesService.toggleFavorite(note: note1);
-      
+
       favorites = await notesService.favoriteNotes.first;
       expect(favorites.length, 1);
       expect(favorites.first.id, note1.id);
@@ -55,7 +57,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final cloudStorage = FirebaseCloudStorage(firestore: firestore);
       final userId = 'user123';
-      
+
       // Create a favorite note
       await firestore.collection('notes').add({
         'user_id': userId,
@@ -63,7 +65,7 @@ void main() {
         'is_favorite': true,
         'last_modified': Timestamp.now(),
       });
-      
+
       // Create a non-favorite note
       await firestore.collection('notes').add({
         'user_id': userId,
@@ -72,9 +74,11 @@ void main() {
         'last_modified': Timestamp.now(),
       });
 
-      final favoritesStream = cloudStorage.getFavoriteNotes(ownerUserId: userId);
+      final favoritesStream = cloudStorage.getFavoriteNotes(
+        ownerUserId: userId,
+      );
       final favorites = await favoritesStream.first;
-      
+
       expect(favorites.length, 1);
       expect(favorites.first.isFavorite, true);
     });
@@ -82,7 +86,7 @@ void main() {
     test('Cloud: updateFavoriteStatus should update the field', () async {
       final firestore = FakeFirebaseFirestore();
       final cloudStorage = FirebaseCloudStorage(firestore: firestore);
-      
+
       final docRef = await firestore.collection('notes').add({
         'is_favorite': false,
         'last_modified': Timestamp.now(),
@@ -98,17 +102,15 @@ void main() {
     });
 
     test('Repository: toggleFavorite should delegate to localDb', () async {
-      final repository = NoteRepository(
-        syncService: MockSyncService(),
-      );
+      final repository = NoteRepository(syncService: MockSyncService());
       final user = await repository.getOrCreateUser(email: 'repo@test.com');
       final note = await repository.createNote(owner: user);
-      
+
       expect(note.isFavorite, false);
-      
+
       final updatedNote = await repository.toggleFavorite(note: note);
       expect(updatedNote.isFavorite, true);
-      
+
       final favorites = await repository.favoriteNotes.first;
       expect(favorites.any((n) => n.id == note.id), true);
     });
