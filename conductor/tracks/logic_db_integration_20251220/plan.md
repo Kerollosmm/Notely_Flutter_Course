@@ -6,7 +6,7 @@
 
 ---
 
-## Phase 1: Design System Tokens & Constants
+## Phase 1: Design System Tokens & Constants [checkpoint: d7aa74e]
 Goal: Implement the core theme tokens and navigation constants.
 
 - [x] Task: Implement `ColorsManager` in `lib/constants/colors_manager.dart` 5191877
@@ -17,7 +17,7 @@ Goal: Implement the core theme tokens and navigation constants.
     - [x] Implement styles using `.sp` from `flutter_screenutil`
 - [x] Task: Update `lib/constants/padge_routs.dart` with new route strings 5191877
     - [x] Add `/favourites`, `/settings`, `/account`, `/search`
-- [~] Task: Conductor - User Manual Verification 'Design System Tokens & Constants' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Design System Tokens & Constants' (Protocol in workflow.md) d7aa74e
 
 ---
 
