@@ -233,15 +233,93 @@ class NotesService {
 
   Future<List<String>> _getTagsForNote(String noteId) async {
     final db = _getDatabaseOrThrow();
-    final results = await db.rawQuery(
-      '''
+    final results = await db.rawQuery('''
       SELECT t.$tagNameColumn FROM $tagsTable t
       JOIN $noteTagsTable nt ON t.$idColumn = nt.$tagIdColumn
       WHERE nt.$noteIdColumn = ?
-    ''',
-      [noteId],
-    );
+    ''', [noteId]);
     return results.map((row) => row[tagNameColumn] as String).toList();
+  }
+
+  Future<void> addTag({required String noteId, required String tagName}) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+
+    final normalizedTagName = tagName.trim().toLowerCase();
+    if (normalizedTagName.isEmpty) return;
+
+    // Get or create tag
+    int tagId;
+    final tagResults = await db.query(tagsTable,
+        where: '$tagNameColumn = ?', whereArgs: [normalizedTagName]);
+    if (tagResults.isEmpty) {
+      tagId = await db.insert(tagsTable, {tagNameColumn: normalizedTagName});
+    } else {
+      tagId = tagResults.first[idColumn] as int;
+    }
+
+    // Check if link already exists
+    final linkResults = await db.query(noteTagsTable,
+        where: '$noteIdColumn = ? AND $tagIdColumn = ?',
+        whereArgs: [noteId, tagId]);
+
+    if (linkResults.isEmpty) {
+      await db.insert(noteTagsTable, {
+        noteIdColumn: noteId,
+        tagIdColumn: tagId,
+      });
+
+      // Update local cache and notify listeners
+      await getNote(id: noteId);
+    }
+  }
+
+  Future<void> removeTag({required String noteId, required String tagName}) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+
+    final normalizedTagName = tagName.trim().toLowerCase();
+
+    final tagResults = await db.query(tagsTable,
+        where: '$tagNameColumn = ?', whereArgs: [normalizedTagName]);
+    if (tagResults.isEmpty) return;
+
+    final tagId = tagResults.first[idColumn] as int;
+
+    await db.delete(noteTagsTable,
+        where: '$noteIdColumn = ? AND $tagIdColumn = ?',
+        whereArgs: [noteId, tagId]);
+
+    // Update local cache and notify listeners
+    await getNote(id: noteId);
+  }
+
+  Future<List<String>> getTagsForNote({required String noteId}) async {
+    await _ensureDbIsOpen();
+    return await _getTagsForNote(noteId);
+  }
+
+  Future<Iterable<DatabaseNote>> searchNotes({required String query}) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+
+    final normalizedQuery = '%${query.trim().toLowerCase()}%';
+
+    // Search by content OR tag name
+    final results = await db.rawQuery('''
+      SELECT DISTINCT n.* FROM $noteTable n
+      LEFT JOIN $noteTagsTable nt ON n.$idColumn = nt.$noteIdColumn
+      LEFT JOIN $tagsTable t ON nt.$tagIdColumn = t.$idColumn
+      WHERE n.$contentJsonColumn LIKE ? OR t.$tagNameColumn LIKE ?
+    ''', [normalizedQuery, normalizedQuery]);
+
+    final List<DatabaseNote> databaseNotes = [];
+    for (final noteRow in results) {
+      final id = noteRow[idColumn] as String;
+      final tags = await _getTagsForNote(id);
+      databaseNotes.add(DatabaseNote.fromRow(noteRow, tags: tags));
+    }
+    return databaseNotes;
   }
 
   Future<Iterable<DatabaseNote>> getAllNotes() async {
@@ -457,15 +535,21 @@ class NotesService {
     }
   }
 
-  Future<void> open() async {
+  Future<void> open({String? dbPath}) async {
     if (_db != null) {
       throw DatabaseAlreadyOpenException();
     }
     try {
-      final docsPath = await getApplicationDocumentsDirectory();
-      final dbPath = join(docsPath.path, dbName);
+      final String finalDbPath;
+      if (dbPath != null) {
+        finalDbPath = dbPath;
+      } else {
+        final docsPath = await getApplicationDocumentsDirectory();
+        finalDbPath = join(docsPath.path, dbName);
+      }
+
       final db = await openDatabase(
-        dbPath,
+        finalDbPath,
         version: 2,
         onCreate: (db, version) async {
           await db.execute(createUserTable);

@@ -58,4 +58,16 @@ class NoteRepository {
 
   Future<DatabaseNote> getNote({required String id}) =>
       _localDb.getNote(id: id);
+
+  Future<void> addTag({required String noteId, required String tagName}) =>
+      _localDb.addTag(noteId: noteId, tagName: tagName);
+
+  Future<void> removeTag({required String noteId, required String tagName}) =>
+      _localDb.removeTag(noteId: noteId, tagName: tagName);
+
+  Future<List<String>> getTagsForNote({required String noteId}) =>
+      _localDb.getTagsForNote(noteId: noteId);
+
+  Future<Iterable<DatabaseNote>> searchNotes({required String query}) =>
+      _localDb.searchNotes(query: query);
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
+import 'package:flutter_course_2/services/crud/crud_exceptions.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,9 @@ void main() {
 
     setUp(() async {
       notesService = NotesService();
+      try {
+        await notesService.open(dbPath: inMemoryDatabasePath);
+      } on DatabaseAlreadyOpenException {}
       // NotesService handles database opening internally
       await notesService.getOrCreateUser(email: 'test@example.com');
       await notesService.deleteAllNotes();

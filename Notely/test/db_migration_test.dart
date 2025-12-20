@@ -26,7 +26,7 @@ void main() {
     setUp(() async {
       notesService = NotesService();
       try {
-        await notesService.open();
+        await notesService.open(dbPath: inMemoryDatabasePath);
       } on DatabaseAlreadyOpenException {
         // already open
       }
