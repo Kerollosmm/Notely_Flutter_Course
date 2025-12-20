@@ -54,16 +54,16 @@ Goal: Sync Favorite status and Tags with Cloud Firestore.
 
 ---
 
-## Phase 4: Repository Layer Extensions
+## Phase 4: Repository Layer Extensions [checkpoint: caf6eed]
 Goal: Expose new features to the UI layer through the `NoteRepository`.
 
-- [ ] Task: Implement Favorites Logic
-    - [ ] Write tests for `toggleFavorite(id)` and `favoriteNotes` stream
-    - [ ] Implement repository methods
-- [ ] Task: Implement Tagging Logic
-    - [ ] Write tests for `addTag`, `removeTag`, and `getTagsForNote`
-    - [ ] Implement repository methods for tag management
-- [ ] Task: Implement Enhanced Search
-    - [ ] Write tests for searching by content AND tags
-    - [ ] Implement repository search method
-- [ ] Task: Conductor - User Manual Verification 'Repository Layer Extensions' (Protocol in workflow.md)
+- [x] Task: Implement Favorites Logic caf6eed
+    - [x] Write tests for `toggleFavorite(id)` and `favoriteNotes` stream
+    - [x] Implement repository methods
+- [x] Task: Implement Tagging Logic caf6eed
+    - [x] Write tests for `addTag`, `removeTag`, and `getTagsForNote`
+    - [x] Implement repository methods for tag management
+- [x] Task: Implement Enhanced Search caf6eed
+    - [x] Write tests for searching by content AND tags
+    - [x] Implement repository search method
+- [x] Task: Conductor - User Manual Verification 'Repository Layer Extensions' (Protocol in workflow.md) caf6eed
