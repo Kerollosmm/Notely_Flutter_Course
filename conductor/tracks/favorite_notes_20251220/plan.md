@@ -3,7 +3,7 @@
 ## Phase 1: Data & Service Layer
 Goal: Ensure the backend and service layers correctly handle "favorite" status and querying.
 
-- [ ] Task: Write Tests for Favorite Note Queries (Cloud & Local)
+- [~] Task: Write Tests for Favorite Note Queries (Cloud & Local)
 - [ ] Task: Implement `getFavoriteNotes` in `CloudFirestoreService`
 - [ ] Task: Implement `toggleFavorite` logic in `NoteService`
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Data & Service Layer' (Protocol in workflow.md)

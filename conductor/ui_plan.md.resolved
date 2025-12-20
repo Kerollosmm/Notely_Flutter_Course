@@ -1,0 +1,152 @@
+# Notely UI Implementation Plan
+
+> **Prerequisite**: Complete ALL phases in [logic_plan.md](file:///C:/Users/KimoStore/.gemini/antigravity/brain/f5d25248-3898-4805-92db-e80cbdb0648f/logic_plan.md) first.
+> **Workflow**: Follow [conductor/workflow.md](file:///d:/gemini_cli/conductor/workflow.md) UI Integration Protocol — Token Analysis → Feature Scaffolding → Atomic Widgets → Screen Composition → Logic Wiring → Routing.
+
+---
+
+## Design System Reference (from [product-guidelines.md](file:///d:/gemini_cli/conductor/product-guidelines.md))
+
+| Token | Value |
+|-------|-------|
+| Primary | `#f9f506` (vibrant yellow) |
+| Dark BG | `#23220f`, `#2f2e1a` |
+| Font Display | Spline Sans |
+| Font Body | Inter / Open Sans |
+| Icons | Material Symbols Outlined |
+| Corners | `rounded-2xl`, `rounded-full` |
+| Cards | Soft shadows, blur backdrop |
+
+---
+
+## Phase 1: Apply Theme Tokens
+
+Goal: Wire design tokens into existing theme system.
+
+- [ ] Task: Update [lib/constants/app_theme.dart](file:///d:/gemini_cli/Notely/lib/constants/app_theme.dart)
+  - Replace hardcoded colors with `ColorsManager` references
+  - Replace inline TextStyles with `TextStyles` class
+  - Ensure dark mode uses `#23220f` background
+- [ ] Task: Verify existing screens render correctly
+- [ ] **Acceptance**: App looks correct in both themes, no color regressions
+
+---
+
+## Phase 2: Auth Screens
+
+Goal: Restyle login/register to match mockups.
+
+### U2.1: Login Screen
+- [ ] Task: Analyze [UI/login screen/screen.png](file:///d:/gemini_cli/UI/login%20screen/screen.png) for tokens
+- [ ] Task: Restyle [lib/Auth_screens/loginpage.dart](file:///d:/gemini_cli/Notely/lib/Auth_screens/loginpage.dart)
+  - Use `ColorsManager`, `TextStyles`, ScreenUtil sizing
+  - Extract reusable form widgets to `lib/widgets/`
+  - Keep [build()](file:///d:/gemini_cli/Notely/lib/page/create_update_note_view.dart#573-661) under 60 lines
+- [ ] **Acceptance**: Visual match, login flow works, validation errors display
+
+### U2.2: Register Screen
+- [ ] Task: Restyle [lib/Auth_screens/registerScreen.dart](file:///d:/gemini_cli/Notely/lib/Auth_screens/registerScreen.dart)
+  - Match login screen styling
+- [ ] **Acceptance**: Visual match, registration works
+
+---
+
+## Phase 3: Home Screen
+
+Goal: Replace [NotesView](file:///d:/gemini_cli/Notely/lib/page/note_view.dart#13-19) with new design.
+
+- [ ] Task: Analyze [UI/homeScreen/home screen.png](file:///d:/gemini_cli/UI/homeScreen/home%20screen.png) for layout structure
+- [ ] Task: Create atomic widgets in `lib/widgets/`
+  - Note card widget (reusable for favorites)
+  - Empty state widget
+  - Search bar widget (if replacing existing)
+- [ ] Task: Create new home screen (modify [lib/page/note_view.dart](file:///d:/gemini_cli/Notely/lib/page/note_view.dart) or new file)
+  - Use `NoteRepository.allNotes` stream
+  - Implement Loading/Empty/Error/Success states
+  - FAB → `createOrUpdateNoteRoute`
+  - Navigation to Settings, Account, Favourites
+- [ ] Task: Update [lib/Auth_screens/accounAnalyz.dart](file:///d:/gemini_cli/Notely/lib/Auth_screens/accounAnalyz.dart) to use new screen
+- [ ] **Acceptance**: Visual match, notes render, pull-to-refresh syncs, offline shows cached
+
+---
+
+## Phase 4: Note Editor
+
+Goal: Restyle editor while keeping FlutterQuill.
+
+- [ ] Task: Analyze [UI/notely_editor/edit_screen.png](file:///d:/gemini_cli/UI/notely_editor/edit_screen.png)
+- [ ] Task: Restyle [lib/page/create_update_note_view.dart](file:///d:/gemini_cli/Notely/lib/page/create_update_note_view.dart)
+  - Keep FlutterQuill engine — style container only
+  - Restyle toolbar in [lib/widgets/note_toolbar.dart](file:///d:/gemini_cli/Notely/lib/widgets/note_toolbar.dart)
+  - Add favorite toggle in app bar
+- [ ] **Acceptance**: Visual match, all formatting works, auto-save persists
+
+---
+
+## Phase 5: Secondary Screens
+
+### U5.1: Favourites Screen
+- [ ] Task: Create `lib/page/favourites_screen.dart`
+  - Use `NoteRepository.favoriteNotes` stream
+  - Reuse note card widget from home
+  - Empty state for no favorites
+- [ ] Task: Register route in [lib/main.dart](file:///d:/gemini_cli/Notely/lib/main.dart)
+- [ ] **Acceptance**: Visual match, shows only starred notes, toggle works
+
+### U5.2: Settings Screen
+- [ ] Task: Restyle [lib/page/setting_screen.dart](file:///d:/gemini_cli/Notely/lib/page/setting_screen.dart)
+  - Theme toggle (Light/Dark/System) via `ThemeNotifier`
+  - Logout triggers `AuthBloc` event
+  - Persist to `shared_preferences`
+- [ ] Task: Register route
+- [ ] **Acceptance**: Visual match, theme changes immediately, persists on restart
+
+### U5.3: Account Screen
+- [ ] Task: Create `lib/page/account_screen.dart`
+  - Display email from `AuthService.firebase().currentUser`
+  - Logout option
+- [ ] Task: Register route
+- [ ] **Acceptance**: Visual match, correct email displayed
+
+### U5.4: Search Screen
+- [ ] Task: Create `lib/page/search_screen.dart` (or inline on home)
+  - Use `NoteRepository.searchNotes()` with debounce
+  - Empty state for no results
+- [ ] Task: Register route if standalone
+- [ ] **Acceptance**: Visual match, results in <300ms, "no results" state shows
+
+---
+
+## Phase 6: Polish
+
+- [ ] Task: Add fade/slide transitions between screens
+- [ ] Task: Ensure all empty states have illustrations + messages
+- [ ] Task: Add sync status indicator on home
+- [ ] Task: Test on multiple screen sizes
+- [ ] **Acceptance**: Smooth transitions, no raw errors, offline clearly indicated
+
+---
+
+## Screen-to-File Mapping
+
+| Mockup | Target File | Action |
+|--------|-------------|--------|
+| [UI/login screen/screen.png](file:///d:/gemini_cli/UI/login%20screen/screen.png) | [lib/Auth_screens/loginpage.dart](file:///d:/gemini_cli/Notely/lib/Auth_screens/loginpage.dart) | MODIFY |
+| [UI/homeScreen/home screen.png](file:///d:/gemini_cli/UI/homeScreen/home%20screen.png) | [lib/page/note_view.dart](file:///d:/gemini_cli/Notely/lib/page/note_view.dart) | MODIFY |
+| [UI/notely_editor/edit_screen.png](file:///d:/gemini_cli/UI/notely_editor/edit_screen.png) | [lib/page/create_update_note_view.dart](file:///d:/gemini_cli/Notely/lib/page/create_update_note_view.dart) | MODIFY |
+| [UI/Favourite screen/favourite.png](file:///d:/gemini_cli/UI/Favourite%20screen/favourite.png) | `lib/page/favourites_screen.dart` | NEW |
+| [UI/setting screen/settings.png](file:///d:/gemini_cli/UI/setting%20screen/settings.png) | [lib/page/setting_screen.dart](file:///d:/gemini_cli/Notely/lib/page/setting_screen.dart) | MODIFY |
+| [UI/account_screen/account.png](file:///d:/gemini_cli/UI/account_screen/account.png) | `lib/page/account_screen.dart` | NEW |
+| [UI/search_screen/search.png](file:///d:/gemini_cli/UI/search_screen/search.png) | `lib/page/search_screen.dart` | NEW |
+
+---
+
+## Quality Gates (per [conductor/workflow.md](file:///d:/gemini_cli/conductor/workflow.md))
+
+Before marking phase complete:
+- [ ] All widget tests pass
+- [ ] Visual match to mockup verified
+- [ ] Dark mode looks native
+- [ ] Responsive on various screen sizes
+- [ ] No linting errors
+- [ ] Accessibility basics (touch targets 44x44px)

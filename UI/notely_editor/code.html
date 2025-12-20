@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notely Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#f9f506",
+              "background-light": "#f8f8f5",
+              "background-dark": "#23220f",
+            },
+            fontFamily: {
+              "display": ["Spline Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen w-full flex flex-col overflow-hidden text-gray-900 dark:text-gray-100 transition-colors duration-200 group/design-root">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between px-4 pt-4 pb-2 shrink-0 z-10 bg-background-light dark:bg-background-dark">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+<button class="bg-primary text-black font-bold text-sm px-5 py-2 rounded-full hover:brightness-95 transition-all shadow-sm active:scale-95">
+                Done
+            </button>
+</div>
+</header>
+<!-- Main Editor Canvas -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-32 relative">
+<!-- Meta Info -->
+<div class="flex flex-col gap-1 pt-2 pb-5">
+<p class="text-gray-400 dark:text-[#9e9d47] text-xs font-medium text-center uppercase tracking-wide">Last edited today at 10:42 AM</p>
+</div>
+<!-- Tags Area -->
+<div class="flex flex-wrap gap-2 mb-4">
+<div class="flex h-7 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-[#343216] border border-gray-100 dark:border-[#3d3b1f] pl-2.5 pr-3 shadow-sm">
+<div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold leading-normal">Ideas</p>
+</div>
+<div class="flex h-7 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-[#343216] border border-gray-100 dark:border-[#3d3b1f] pl-2.5 pr-3 shadow-sm">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-400"></div>
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold leading-normal">Urgent</p>
+</div>
+<button class="flex h-7 shrink-0 items-center justify-center w-7 rounded-full bg-transparent border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:text-primary hover:border-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+</button>
+</div>
+<!-- Title Input -->
+<div class="mb-4">
+<input class="w-full bg-transparent border-none p-0 text-[2rem] font-bold placeholder-gray-300 dark:placeholder-[#55532d] focus:ring-0 text-gray-900 dark:text-white leading-tight caret-primary" placeholder="Untitled Note" type="text" value="Product Strategy 2024"/>
+</div>
+<!-- Body Input -->
+<div class="w-full h-auto min-h-[600px]">
+<textarea class="w-full h-full bg-transparent border-none p-0 text-lg leading-relaxed placeholder-gray-300 dark:placeholder-[#55532d] focus:ring-0 text-gray-700 dark:text-gray-200 resize-none caret-primary" placeholder="Start typing...">1. Market Analysis
+Current trends show a significant shift towards AI-driven productivity tools. Users are looking for more than just note-taking; they want intelligent summarization and context-aware suggestions.
+
+2. Q3 Goals
+• Launch beta testing for the new collaboration feature.
+• Increase daily active users by 15%.
+• Refine the onboarding process to reduce drop-off.
+
+3. Action Items
+[ ] Schedule team sync
+[ ] Review analytics report from last month
+[ ] Update roadmap documentation
+
+Ideas for the next sprint:
+Maybe we can introduce a "Focus Mode" that dims everything except the current paragraph? Need to discuss with the design team on Friday.
+
+Note: Remember to check the API limitations for the real-time sync engine before promising the feature to stakeholders.</textarea>
+</div>
+</main>
+<!-- Floating Formatting Toolbar -->
+<!-- Positioned fixed at bottom to simulate sticky toolbar above keyboard -->
+<div class="fixed bottom-6 left-0 right-0 flex justify-center z-20 px-4 pointer-events-none">
+<div class="pointer-events-auto bg-white dark:bg-[#2c2b18] rounded-full shadow-2xl border border-gray-100 dark:border-[#3a381f] p-1.5 flex items-center gap-1 backdrop-blur-xl bg-opacity-95 dark:bg-opacity-95 ring-1 ring-black/5">
+<!-- Toolbar Button: Bold (Active) -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full bg-primary text-black transition-transform active:scale-95 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 22px;">format_bold</span>
+</button>
+<!-- Toolbar Button: Italic -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">format_italic</span>
+</button>
+<!-- Toolbar Button: Underline -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">format_underlined</span>
+</button>
+<!-- Vertical Divider -->
+<div class="w-px h-6 bg-gray-200 dark:bg-[#454325] mx-1"></div>
+<!-- Toolbar Button: List -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">format_list_bulleted</span>
+</button>
+<!-- Toolbar Button: Checkbox -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">check_box</span>
+</button>
+<!-- Toolbar Button: Image -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">add_photo_alternate</span>
+</button>
+<!-- Toolbar Button: Color -->
+<button class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 22px;">palette</span>
+</button>
+</div>
+</div>
+</body></html>

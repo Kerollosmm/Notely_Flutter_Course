@@ -1,0 +1,111 @@
+# Notely Logic Implementation Plan
+
+> **Workflow**: Follow [conductor/workflow.md](file:///d:/gemini_cli/conductor/workflow.md) — TDD (Red→Green→Refactor), phase checkpoints, quality gates.
+> **Execute ALL logic phases before starting UI plan.**
+
+---
+
+## Phase 1: Theme Tokens & Constants
+
+Goal: Prepare design system tokens from [product-guidelines.md](file:///d:/gemini_cli/conductor/product-guidelines.md) without UI changes.
+
+- [ ] Task: Create `ColorsManager` in `lib/constants/colors_manager.dart`
+  - Primary: `#f9f506` (vibrant yellow)
+  - Dark backgrounds: `#23220f`, `#2f2e1a`
+  - Light/Dark variants for all UI elements
+- [ ] Task: Create `TextStyles` in `lib/constants/text_styles.dart`
+  - Use `google_fonts` with Spline Sans for headers, Inter for body
+  - All sizes use `.sp` from `flutter_screenutil`
+  - Follow naming: `font24YellowBold`, `font16GrayRegular`, etc.
+- [ ] Task: Add route constants to [lib/constants/padge_routs.dart](file:///d:/gemini_cli/Notely/lib/constants/padge_routs.dart)
+  - `favouritesRoute = '/favourites'`
+  - `settingsRoute = '/settings'`
+  - `accountRoute = '/account'`
+  - `searchRoute = '/search'`
+- [ ] **Acceptance**: Files compile, tokens importable, no runtime errors
+
+---
+
+## Phase 2: Database & Model Layer
+
+Goal: Add `is_favorite` field with proper migration and testing.
+
+- [ ] Task: Write failing tests for isFavorite field
+  - Test [DatabaseNote](file:///d:/gemini_cli/Notely/lib/services/crud/note_services.dart#436-473) parses `is_favorite` from row
+  - Test creating note defaults to `isFavorite = false`
+  - Test toggle changes flag
+- [ ] Task: Implement DB migration in [lib/services/crud/note_services.dart](file:///d:/gemini_cli/Notely/lib/services/crud/note_services.dart)
+  - Bump `dbVersion` (1 → 2)
+  - Add `onUpgrade` handler with ALTER TABLE
+  - Column: `is_favorite INTEGER NOT NULL DEFAULT 0`
+- [ ] Task: Update [DatabaseNote](file:///d:/gemini_cli/Notely/lib/services/crud/note_services.dart#436-473) model
+  - Add `final bool isFavorite` field
+  - Update `fromRow()` factory
+- [ ] Task: Run tests — verify all pass
+- [ ] **Acceptance**: DB opens without crash, existing notes preserved, tests green
+
+---
+
+## Phase 3: Firestore Sync for isFavorite
+
+Goal: Ensure favorite status syncs between local and cloud.
+
+- [ ] Task: Write failing tests for sync
+  - Test push includes `is_favorite` field
+  - Test pull reads `is_favorite` from Firestore
+- [ ] Task: Update `CloudNote` model in [lib/services/cloud/cloud_note.dart](file:///d:/gemini_cli/Notely/lib/services/cloud/cloud_note.dart)
+  - Add `isFavorite` field
+- [ ] Task: Update [lib/services/cloud/firebase_cloud_storage.dart](file:///d:/gemini_cli/Notely/lib/services/cloud/firebase_cloud_storage.dart)
+  - Include `is_favorite` in document writes/reads
+- [ ] Task: Update [lib/services/sync/sync_service.dart](file:///d:/gemini_cli/Notely/lib/services/sync/sync_service.dart)
+  - Map `is_favorite` in push and pull operations
+- [ ] Task: Run tests — verify all pass
+- [ ] **Acceptance**: Create favorited note → syncs to Firestore → pull shows correct flag
+
+---
+
+## Phase 4: Repository Layer Extensions
+
+Goal: Expose favorites and search via repository with proper testing.
+
+- [ ] Task: Write failing tests for repository methods
+  - Test `toggleFavorite(id)` updates flag and marks dirty
+  - Test `favoriteNotes` stream filters correctly
+  - Test `searchNotes(query)` returns matching notes
+- [ ] Task: Implement in [lib/services/repository/note_repository.dart](file:///d:/gemini_cli/Notely/lib/services/repository/note_repository.dart)
+  - `toggleFavorite(String id)` → update sqflite, mark sync dirty
+  - `Stream<List<DatabaseNote>> get favoriteNotes` → filtered stream
+  - `searchNotes(String query)` → filter by content JSON
+- [ ] Task: Run tests — verify all pass
+- [ ] **Acceptance**: Toggle persists, streams filter correctly, search returns matches
+
+---
+
+## Phase Verification Checklist
+
+Before starting UI plan, verify per [conductor/workflow.md](file:///d:/gemini_cli/conductor/workflow.md):
+
+- [ ] All unit tests pass
+- [ ] Code coverage >80% for new code
+- [ ] App launches without DB crash
+- [ ] Existing notes load correctly with `isFavorite = false`
+- [ ] Firestore console shows `is_favorite` field
+- [ ] `ColorsManager` and `TextStyles` importable
+- [ ] Route constants defined
+
+---
+
+## Files Touched
+
+| File | Action |
+|------|--------|
+| `lib/constants/colors_manager.dart` | NEW |
+| `lib/constants/text_styles.dart` | NEW |
+| [lib/constants/padge_routs.dart](file:///d:/gemini_cli/Notely/lib/constants/padge_routs.dart) | MODIFY |
+| [lib/services/crud/note_services.dart](file:///d:/gemini_cli/Notely/lib/services/crud/note_services.dart) | MODIFY |
+| [lib/services/cloud/cloud_note.dart](file:///d:/gemini_cli/Notely/lib/services/cloud/cloud_note.dart) | MODIFY |
+| [lib/services/cloud/firebase_cloud_storage.dart](file:///d:/gemini_cli/Notely/lib/services/cloud/firebase_cloud_storage.dart) | MODIFY |
+| [lib/services/sync/sync_service.dart](file:///d:/gemini_cli/Notely/lib/services/sync/sync_service.dart) | MODIFY |
+| [lib/services/repository/note_repository.dart](file:///d:/gemini_cli/Notely/lib/services/repository/note_repository.dart) | MODIFY |
+| `test/services/note_services_test.dart` | NEW |
+| `test/services/note_repository_test.dart` | NEW |

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1042612043664",
+    "project_id": "notely-7fcda",
+    "storage_bucket": "notely-7fcda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042612043664:android:280418f3d2fce5cf67fd15",
+        "android_client_info": {
+          "package_name": "com.example.flutter_course_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6NLZbDbmijSlv12cil2ayxPPTrC31oWg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

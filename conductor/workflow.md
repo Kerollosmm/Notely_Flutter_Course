@@ -134,7 +134,36 @@ All tasks follow a strict lifecycle:
 
 10.  **Announce Completion:** Inform the user that the phase is complete and the checkpoint has been created, with the detailed verification report attached as a git note.
 
-### Quality Gates
+### UI Integration Protocol (Mockup to Flutter)
+
+When implementing a new screen from the `UI/` directory, follow this strict sequence:
+
+1. **Token Analysis:**
+   - Open the `code.html` file in the corresponding `@UI` subdirectory.
+   - Extract colors, font sizes, and spacing from the Tailwind config.
+   - **Wire:** Update `lib/core/theming/colors_manager.dart` and `lib/core/theming/text_styles.dart` with any new tokens.
+
+2. **Feature Scaffolding:**
+   - Create a new directory under `lib/features/<feature_name>/`.
+   - Sub-directories: `ui/views`, `ui/widgets`, `logic`, `data/models`, `data/repos`.
+
+3. **Atomic Widget Conversion:**
+   - Break the HTML structure into small, stateless widgets in `ui/widgets`.
+   - **Adaptation:** Use `flutter_screenutil` (`.w`, `.h`, `.sp`, `.r`) for all dimensions.
+   - **Styling:** Use `ColorsManager` and `TextStyles` only. Never hardcode colors or sizes.
+
+4. **Screen Composition:**
+   - Build the main view in `ui/views/<feature>_view.dart`.
+   - Compose the view using the atomic widgets. Keep the `build` method under 60 lines.
+
+5. **Logic & Dependency Wiring:**
+   - Create the corresponding Bloc or Cubit in the `logic/` folder.
+   - **Wire:** Use `GetIt` for service location and `BlocProvider` at the highest necessary level (preferably via the Router).
+
+6. **Routing Integration:**
+   - **Wire:** Register the new screen in `lib/constants/padge_routs.dart` and the application's central router (e.g., `main.dart` or `AppRouter`).
+
+## Quality Gates
 
 Before marking any task complete, verify:
 
