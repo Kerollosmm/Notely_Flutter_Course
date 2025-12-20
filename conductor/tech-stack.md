@@ -19,6 +19,7 @@
 
 ## UI & UX Utilities
 - **flutter_screenutil**: Ensuring a responsive and adaptive UI across various screen sizes.
+- **flutter_staggered_grid_view**: Implementing modern masonry-style grid layouts.
 - **google_fonts**: Integrated custom typography (Spline Sans, Inter, Open Sans).
 - **flutter_quill**: Rich text editing and formatting.
 - **fluttertoast**: Quick user feedback notifications.
@@ -29,3 +30,9 @@
 - **connectivity_plus**: Monitoring network state for cloud sync management.
 - **uuid**: Generating unique identifiers for local and cloud data.
 - **equatable**: Simplifying object comparisons for bloc state updates.
+
+## Testing Tools
+- **bloc_test**: specialized testing for Blocs.
+- **mocktail**: mock-friendly testing library.
+- **fake_cloud_firestore**: in-memory Firestore for unit/widget testing.
+- **sqflite_common_ffi**: desktop-friendly SQLite for running database tests.

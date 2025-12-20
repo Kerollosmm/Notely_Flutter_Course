@@ -14,6 +14,7 @@ MyNotes is a modern, cross-platform note-taking application designed to provide 
 ## Key Features
 - **Secure Authentication**: Robust user registration and login system featuring email verification via Firebase.
 - **Cloud Synchronization**: Real-time data persistence and syncing across devices powered by Cloud Firestore.
+- **Favorite Notes**: Dedicated space to view and manage important (starred) notes with search and tag-based filtering.
 - **Rich Text Editing**: Advanced formatting options to create structured and visually appealing notes.
 - **Offline Support**: Local caching and storage using `sqflite` to ensure notes are accessible even without an internet connection.
 - **Note Sharing**: Ability to share notes easily with other users or via external applications.
