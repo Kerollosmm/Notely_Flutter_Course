@@ -24,17 +24,17 @@ Goal: Implement the core theme tokens and navigation constants.
 ## Phase 2: Database Schema & Migration
 Goal: Upgrade `sqflite` schema to support Favorites and the Tagging System.
 
-- [ ] Task: Prepare Migration Tests
-    - [ ] Write failing tests for DB version bump
-    - [ ] Write tests to verify `is_favorite` column exists after migration
-    - [ ] Write tests to verify `tags` and `note_tags` tables exist after migration
-- [ ] Task: Implement `is_favorite` migration in `NoteService`
-    - [ ] Update `dbVersion` and `onUpgrade` logic
-    - [ ] Update `DatabaseNote` model to include `isFavorite`
-- [ ] Task: Implement Tagging System Tables
-    - [ ] Create `tags` table (id, name)
-    - [ ] Create `note_tags` table (note_id, tag_id)
-- [ ] Task: Conductor - User Manual Verification 'Database Schema & Migration' (Protocol in workflow.md)
+- [x] Task: Prepare Migration Tests a6697c3
+    - [x] Write failing tests for DB version bump
+    - [x] Write tests to verify `is_favorite` column exists after migration
+    - [x] Write tests to verify `tags` and `note_tags` tables exist after migration
+- [x] Task: Implement `is_favorite` migration in `NoteService` a6697c3
+    - [x] Update `dbVersion` and `onUpgrade` logic
+    - [x] Update `DatabaseNote` model to include `isFavorite`
+- [x] Task: Implement Tagging System Tables a6697c3
+    - [x] Create `tags` table (id, name)
+    - [x] Create `note_tags` table (note_id, tag_id)
+- [~] Task: Conductor - User Manual Verification 'Database Schema & Migration' (Protocol in workflow.md)
 
 ---
 
