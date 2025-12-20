@@ -1,12 +1,12 @@
 # Track Plan: Implement the "Favorite Notes" Screen
 
-## Phase 1: Data & Service Layer
+## Phase 1: Data & Service Layer [checkpoint: fb8d49c]
 Goal: Ensure the backend and service layers correctly handle "favorite" status and querying.
 
-- [~] Task: Write Tests for Favorite Note Queries (Cloud & Local)
-- [ ] Task: Implement `getFavoriteNotes` in `CloudFirestoreService`
-- [ ] Task: Implement `toggleFavorite` logic in `NoteService`
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Data & Service Layer' (Protocol in workflow.md)
+- [x] Task: Write Tests for Favorite Note Queries (Cloud & Local) (37fa385)
+- [x] Task: Implement `getFavoriteNotes` in `CloudFirestoreService` (37fa385)
+- [x] Task: Implement `toggleFavorite` logic in `NoteService` (37fa385)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Data & Service Layer' (Protocol in workflow.md) (fb8d49c)
 
 ## Phase 2: Logic & State Management
 Goal: Implement the Bloc to manage the favorites list, search, and filtering.
