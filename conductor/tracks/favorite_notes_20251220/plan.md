@@ -16,12 +16,12 @@ Goal: Implement the Bloc to manage the favorites list, search, and filtering.
 - [x] Task: Integrate Bloc with `NoteRepository` (92e69f9)
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Logic & State Management' (Protocol in workflow.md) (2d2a1a8)
 
-## Phase 3: UI Implementation
+## Phase 3: UI Implementation [checkpoint: 73ed132]
 Goal: Build the responsive screen and components according to the design guidelines.
 
-- [ ] Task: Write Widget Tests for `FavoriteNotesScreen`
-- [ ] Task: Implement `FavoriteNotesScreen` Layout (Scaffold, AppBar)
-- [ ] Task: Implement Search Bar and Filter Chips components
-- [ ] Task: Implement Masonry Grid for Favorite Note Cards
-- [ ] Task: Connect UI to `FavoriteNotesBloc`
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: UI Implementation' (Protocol in workflow.md)
+- [x] Task: Write Widget Tests for `FavoriteNotesScreen` (c096d4d)
+- [x] Task: Implement `FavoriteNotesScreen` Layout (Scaffold, AppBar) (c096d4d)
+- [x] Task: Implement Search Bar and Filter Chips components (c096d4d)
+- [x] Task: Implement Masonry Grid for Favorite Note Cards (c096d4d)
+- [x] Task: Connect UI to `FavoriteNotesBloc` (c096d4d)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: UI Implementation' (Protocol in workflow.md) (73ed132)
