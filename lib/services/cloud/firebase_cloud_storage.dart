@@ -27,15 +27,20 @@ class FirebaseCloudStorage {
   Future<void> updateNotes({
     required String documentId,
     required String contentJson,
-    String title = '', // Optional for now
+    String title = '',
     required Timestamp lastModified,
+    bool? isFavorite,
   }) async {
     try {
-      await notes.doc(documentId).update({
+      final updates = {
         textFieldName: contentJson,
         titleFieldName: title,
         'last_modified': lastModified,
-      });
+      };
+      if (isFavorite != null) {
+        updates['is_favorite'] = isFavorite;
+      }
+      await notes.doc(documentId).update(updates);
     } catch (e) {
       throw CouldNotUpdateNoteException();
     }
@@ -77,12 +82,14 @@ class FirebaseCloudStorage {
     required String ownerUserId,
     required String contentJson,
     required Timestamp lastModified,
+    bool isFavorite = false,
   }) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
       textFieldName: contentJson,
       titleFieldName: '',
       'last_modified': lastModified,
+      'is_favorite': isFavorite,
     });
     final fitchNote = await document.get();
     return CloudNote(
@@ -91,6 +98,7 @@ class FirebaseCloudStorage {
       contentJson: contentJson,
       title: '',
       lastModified: lastModified,
+      isFavorite: isFavorite,
     );
   }
 

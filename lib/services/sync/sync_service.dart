@@ -49,6 +49,7 @@ class SyncService {
             ownerUserId: userUid,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            isFavorite: note.isFavorite,
           );
           // Update local with remote ID and synced status
           await _localDb.updateNoteSyncStatus(
@@ -62,6 +63,7 @@ class SyncService {
             documentId: note.remoteId!,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            isFavorite: note.isFavorite,
           );
           await _localDb.updateNoteSyncStatus(
             id: note.id,
@@ -142,26 +144,9 @@ class SyncService {
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
             syncStatus: SyncStatus.synced,
+            isFavorite: remoteNote.isFavorite,
           );
         } else {
-          // New note from remote
-          // We need to generate a local ID for it?
-          // We can use UUID.
-          // Note: `upsertLocalNote` takes an ID.
-          // If I don't have a local ID, I generate one.
-          // Check if I already have a note with the SAME ID?
-          // Remote ID is not Local ID.
-          // So I generate new UUID.
-          // WAIT. If I uninstall and reinstall, I pull notes.
-          // They will have remote IDs but no local IDs.
-          // I generate new local IDs for them.
-
-          // But what if I have a local note that hasn't synced yet,
-          // and I pull a note that IS that note (somehow)? Unlikely with UUIDs.
-
-          // One Edge Case: If I use `remoteId` as `id`?
-          // No, local `id` is UUID, remote `id` is Firestore ID.
-
           await _localDb.upsertLocalNote(
             id: Uuid().v4(), // Generate new local ID
             userId: localUserId,
@@ -169,6 +154,7 @@ class SyncService {
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
             syncStatus: SyncStatus.synced,
+            isFavorite: remoteNote.isFavorite,
           );
         }
       }
