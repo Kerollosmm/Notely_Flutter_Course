@@ -6,7 +6,9 @@ import 'package:flutter_course_2/constants/colors_manager.dart';
 
 void main() {
   group('TextStyles', () {
-    testWidgets('should utilize Spline Sans for headers', (WidgetTester tester) async {
+    testWidgets('should utilize Spline Sans for headers', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         ScreenUtilInit(
           designSize: const Size(375, 812),
@@ -22,8 +24,10 @@ void main() {
       expect(style.color, ColorsManager.primary);
     });
 
-    testWidgets('should utilize Inter for body text', (WidgetTester tester) async {
-       await tester.pumpWidget(
+    testWidgets('should utilize Inter for body text', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
         ScreenUtilInit(
           designSize: const Size(375, 812),
           builder: (context, child) {

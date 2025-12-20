@@ -29,9 +29,10 @@ void main() {
         userId: 1,
         contentJson: '{"insert":"Note 1"}',
         syncStatus: SyncStatus.synced,
-        remoteId: 'r1',
+        remoteId: 'remote1',
         lastModified: DateTime.now(),
         isFavorite: true,
+        tags: const [],
       ),
     ];
 

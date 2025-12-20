@@ -155,9 +155,7 @@ class NotesService {
     // Refresh cache (optional, or just for this note)
     // For performance, maybe don't refresh entire list every time if batching.
     // But consistent with current architecture:
-    await getNote(
-      id: id,
-    ); // This refreshes the cache for this note
+    await getNote(id: id); // This refreshes the cache for this note
   }
 
   Future<DatabaseNote> updateNote({
@@ -217,11 +215,14 @@ class NotesService {
 
   Future<List<String>> _getTagsForNote(String noteId) async {
     final db = _getDatabaseOrThrow();
-    final results = await db.rawQuery('''
+    final results = await db.rawQuery(
+      '''
       SELECT t.$tagNameColumn FROM $tagsTable t
       JOIN $noteTagsTable nt ON t.$idColumn = nt.$tagIdColumn
       WHERE nt.$noteIdColumn = ?
-    ''', [noteId]);
+    ''',
+      [noteId],
+    );
     return results.map((row) => row[tagNameColumn] as String).toList();
   }
 
@@ -457,16 +458,18 @@ class NotesService {
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
             // is_favorite column was added in a previous un-versioned iteration or in version 2
-            // Since the code already has is_favorite in createNoteTable, 
+            // Since the code already has is_favorite in createNoteTable,
             // if upgrading from a version that didn't have it, we'd need to add it.
             // BUT, looking at createNoteTable, it's already there.
             // Let's implement the new Tagging system tables for version 2.
             await db.execute(createTagsTable);
             await db.execute(createNoteTagsTable);
-            
+
             // Check if is_favorite exists, if not add it (defensive)
             try {
-              await db.execute('ALTER TABLE $noteTable ADD COLUMN $isFavoriteColumn INTEGER NOT NULL DEFAULT 0');
+              await db.execute(
+                'ALTER TABLE $noteTable ADD COLUMN $isFavoriteColumn INTEGER NOT NULL DEFAULT 0',
+              );
             } catch (e) {
               // Column might already exist
             }
@@ -582,13 +585,15 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         FOREIGN KEY("user_id") REFERENCES "user"("id")
       );''';
 
-const createTagsTable = '''CREATE TABLE IF NOT EXISTS "$tagsTable" (
+const createTagsTable =
+    '''CREATE TABLE IF NOT EXISTS "$tagsTable" (
         "$idColumn" INTEGER NOT NULL,
         "$tagNameColumn" TEXT NOT NULL UNIQUE,
         PRIMARY KEY("$idColumn" AUTOINCREMENT)
       );''';
 
-const createNoteTagsTable = '''CREATE TABLE IF NOT EXISTS "$noteTagsTable" (
+const createNoteTagsTable =
+    '''CREATE TABLE IF NOT EXISTS "$noteTagsTable" (
         "$noteIdColumn" TEXT NOT NULL,
         "$tagIdColumn" INTEGER NOT NULL,
         PRIMARY KEY("$noteIdColumn", "$tagIdColumn"),

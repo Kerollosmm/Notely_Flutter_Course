@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/crud/crud_exceptions.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart';
-import 'dart:io';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,18 +33,22 @@ void main() {
       await notesService.deleteAllNotes();
     });
 
-    tearDown(() async {
-    });
+    tearDown(() async {});
 
-    test('Migration should add is_favorite column and tagging tables', () async {
-      final owner = await notesService.getOrCreateUser(email: 'migration_test@example.com');
-      final note = await notesService.createNote(owner: owner);
-      
-      // Verify isFavorite field is present and default is false
-      expect(note.isFavorite, false);
-      
-      // Verify note has an empty tags list
-      expect(note.tags, isEmpty);
-    });
+    test(
+      'Migration should add is_favorite column and tagging tables',
+      () async {
+        final owner = await notesService.getOrCreateUser(
+          email: 'migration_test@example.com',
+        );
+        final note = await notesService.createNote(owner: owner);
+
+        // Verify isFavorite field is present and default is false
+        expect(note.isFavorite, false);
+
+        // Verify note has an empty tags list
+        expect(note.tags, isEmpty);
+      },
+    );
   });
 }

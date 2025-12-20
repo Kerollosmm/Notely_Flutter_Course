@@ -136,8 +136,9 @@ class _NotesViewState extends State<NotesView> with TickerProviderStateMixin {
                           // Also filter by search query
                           final query = _searchController.text.toLowerCase();
                           final filteredNotes = _allNotes.where((note) {
-                            if (note.syncStatus == SyncStatus.deletedLocally)
+                            if (note.syncStatus == SyncStatus.deletedLocally) {
                               return false;
+                            }
 
                             String plainText;
                             try {

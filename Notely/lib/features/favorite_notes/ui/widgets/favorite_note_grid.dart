@@ -99,7 +99,7 @@ class _NoteCard extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            'Note ID: ${note.id.substring(0, 8)}',
+            'Note ID: ${note.id.length > 8 ? note.id.substring(0, 8) : note.id}',
             style: isDark
                 ? TextStyles.font16WhiteRegular
                 : TextStyles.font16BlackRegular,

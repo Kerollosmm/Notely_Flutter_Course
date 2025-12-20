@@ -154,13 +154,14 @@ void main() {
   testWidgets('displays grid of notes when notes are loaded', (tester) async {
     final notes = [
       DatabaseNote(
-        id: '1234567890',
+        id: '1',
         userId: 1,
         contentJson: 'Note 1 Content',
         syncStatus: SyncStatus.synced,
-        remoteId: 'r1',
+        remoteId: 'remote1',
         lastModified: DateTime.now(),
         isFavorite: true,
+        tags: const [],
       ),
     ];
     when(() => bloc.state).thenReturn(FavoriteNotesStateLoaded(notes: notes));

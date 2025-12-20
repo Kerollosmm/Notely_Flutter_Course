@@ -1,4 +1,3 @@
-
 import 'package:flutter_course_2/services/auth/auth_exception.dart';
 import 'package:flutter_course_2/services/auth/auth_provider.dart';
 import 'package:flutter_course_2/services/auth/auth_user.dart';
@@ -42,20 +41,21 @@ void main() {
         password: 'anypassword',
       );
 
-      expect(badEmailUser,
-          throwsA(const TypeMatcher<UserNotFoundAuthExceptions>()));
+      expect(
+        badEmailUser,
+        throwsA(const TypeMatcher<UserNotFoundAuthExceptions>()),
+      );
 
       final badPasswordUser = provider.createUser(
         email: 'someone@bar.com',
         password: 'foobar',
       );
-      expect(badPasswordUser,
-          throwsA(const TypeMatcher<WrongPasswordAuthException>()));
-
-      final user = await provider.createUser(
-        email: 'foo',
-        password: 'bar',
+      expect(
+        badPasswordUser,
+        throwsA(const TypeMatcher<WrongPasswordAuthException>()),
       );
+
+      final user = await provider.createUser(email: 'foo', password: 'bar');
       expect(provider.currentUser, user);
       expect(user.isEmailVerified, false);
     });
@@ -69,10 +69,7 @@ void main() {
 
     test('Should be able to log out and log in again', () async {
       await provider.logOut();
-      await provider.logIn(
-        email: 'email',
-        password: 'password',
-      );
+      await provider.logIn(email: 'email', password: 'password');
       final user = provider.currentUser;
       expect(user, isNotNull);
     });
@@ -93,10 +90,7 @@ class MockAuthProvider implements AuthProvider {
   }) async {
     if (!isInitialized) throw NotInitializedException();
     await Future.delayed(const Duration(seconds: 1));
-    return logIn(
-      email: email,
-      password: password,
-    );
+    return logIn(email: email, password: password);
   }
 
   @override
@@ -109,10 +103,7 @@ class MockAuthProvider implements AuthProvider {
   }
 
   @override
-  Future<AuthUser> logIn({
-    required String email,
-    required String password,
-  }) {
+  Future<AuthUser> logIn({required String email, required String password}) {
     if (!isInitialized) throw NotInitializedException();
     if (email == 'foo@bar.com') throw UserNotFoundAuthExceptions();
     if (password == 'foobar') throw WrongPasswordAuthException();
@@ -145,7 +136,7 @@ class MockAuthProvider implements AuthProvider {
     );
     _user = newUser;
   }
-  
+
   @override
   Future<void> sendPasswordReset({required String toEmail}) {
     // TODO: implement sendPasswordReset
