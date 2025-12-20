@@ -85,6 +85,7 @@ class NotesService {
     required String? remoteId,
     required DateTime lastModified,
     SyncStatus syncStatus = SyncStatus.synced,
+    bool isFavorite = false,
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -101,6 +102,7 @@ class NotesService {
           syncStatusColumn: syncStatus.index,
           if (remoteId != null) remoteIdColumn: remoteId,
           lastModifiedColumn: lastModified.millisecondsSinceEpoch,
+          isFavoriteColumn: isFavorite ? 1 : 0,
         },
         where: 'id = ?',
         whereArgs: [id],
@@ -113,15 +115,12 @@ class NotesService {
         syncStatusColumn: syncStatus.index,
         remoteIdColumn: remoteId,
         lastModifiedColumn: lastModified.millisecondsSinceEpoch,
+        isFavoriteColumn: isFavorite ? 1 : 0,
       });
     }
 
-    // Refresh cache (optional, or just for this note)
-    // For performance, maybe don't refresh entire list every time if batching.
-    // But consistent with current architecture:
-    final note = await getNote(
-      id: id,
-    ); // This refreshes the cache for this note
+    // Refresh cache
+    await getNote(id: id);
   }
 
   Future<DatabaseNote> updateNote({
@@ -177,6 +176,27 @@ class NotesService {
     _notes.removeWhere((n) => n.id == id);
     _notes.add(updatedNote);
     _notesStreamController.add(_notes);
+  }
+
+  Future<void> toggleFavorite({required String id}) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final note = await getNote(id: id);
+    final newStatus = !note.isFavorite;
+
+    await db.update(
+      noteTable,
+      {
+        isFavoriteColumn: newStatus ? 1 : 0,
+        syncStatusColumn: SyncStatus.dirty.index, // Mark dirty for sync
+        lastModifiedColumn: DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    // Refresh cache
+    await getNote(id: id);
   }
 
   Future<Iterable<DatabaseNote>> getAllNotes() async {
@@ -285,6 +305,7 @@ class NotesService {
       syncStatus: SyncStatus.dirty,
       remoteId: null,
       lastModified: DateTime.fromMillisecondsSinceEpoch(now),
+      isFavorite: false,
     );
 
     _notes.add(note);
@@ -390,21 +411,23 @@ class NotesService {
     try {
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, dbName);
-      final db = await openDatabase(dbPath);
+      final db = await openDatabase(
+        dbPath,
+        version: 2,
+        onUpgrade: (db, oldVersion, newVersion) async {
+          if (oldVersion < 2) {
+            await db.execute(
+              'ALTER TABLE note ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
+            );
+          }
+        },
+      );
       _db = db;
 
       // create the user table
       await db.execute(createUserTable);
 
       // create note table
-      // We might need to drop table if it exists and schema changed, for this dev phase
-      // await db.execute('DROP TABLE IF EXISTS $noteTable');
-      // For now, I'll rely on the user to uninstall/reinstall or I'll just change the table name or run a migration
-      // Since this is a refactor, I will update the CREATE statement.
-      // IF the table exists with old schema, it might crash.
-      // I'll add a check or just Create if not exists.
-      // Ideally we version the DB.
-
       await db.execute(createNoteTable);
       await _cacheNotes();
     } on MissingPlatformDirectoryException {
@@ -440,6 +463,7 @@ class DatabaseNote {
   final SyncStatus syncStatus;
   final String? remoteId;
   final DateTime lastModified;
+  final bool isFavorite;
 
   DatabaseNote({
     required this.id,
@@ -448,6 +472,7 @@ class DatabaseNote {
     required this.syncStatus,
     required this.remoteId,
     required this.lastModified,
+    required this.isFavorite,
   });
 
   DatabaseNote.fromRow(Map<String, Object?> map)
@@ -458,11 +483,12 @@ class DatabaseNote {
       remoteId = map[remoteIdColumn] as String?,
       lastModified = DateTime.fromMillisecondsSinceEpoch(
         map[lastModifiedColumn] as int,
-      );
+      ),
+      isFavorite = (map[isFavoriteColumn] as int) == 1;
 
   @override
   String toString() =>
-      'Note, ID = $id, userId = $userId, syncStatus = $syncStatus, lastModified = $lastModified';
+      'Note, ID = $id, userId = $userId, syncStatus = $syncStatus, lastModified = $lastModified, isFavorite = $isFavorite';
 
   @override
   bool operator ==(covariant DatabaseNote other) => id == other.id;
@@ -481,6 +507,7 @@ const contentJsonColumn = 'content_json';
 const syncStatusColumn = 'sync_status';
 const remoteIdColumn = 'remote_id';
 const lastModifiedColumn = 'last_modified';
+const isFavoriteColumn = 'is_favorite';
 
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
@@ -496,5 +523,6 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "sync_status"	INTEGER NOT NULL DEFAULT 0,
         "remote_id" TEXT,
         "last_modified" INTEGER NOT NULL,
+        "is_favorite" INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY("user_id") REFERENCES "user"("id")
       );''';
