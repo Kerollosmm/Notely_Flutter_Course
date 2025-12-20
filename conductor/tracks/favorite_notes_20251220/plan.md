@@ -8,13 +8,13 @@ Goal: Ensure the backend and service layers correctly handle "favorite" status a
 - [x] Task: Implement `toggleFavorite` logic in `NoteService` (37fa385)
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Data & Service Layer' (Protocol in workflow.md) (fb8d49c)
 
-## Phase 2: Logic & State Management
+## Phase 2: Logic & State Management [checkpoint: 2d2a1a8]
 Goal: Implement the Bloc to manage the favorites list, search, and filtering.
 
-- [ ] Task: Write Unit Tests for `FavoriteNotesBloc`
-- [ ] Task: Implement `FavoriteNotesBloc` (Events: Load, Search, Filter; States: Loading, Loaded, Error)
-- [ ] Task: Integrate Bloc with `NoteRepository`
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Logic & State Management' (Protocol in workflow.md)
+- [x] Task: Write Unit Tests for `FavoriteNotesBloc` (92e69f9)
+- [x] Task: Implement `FavoriteNotesBloc` (Events: Load, Search, Filter; States: Loading, Loaded, Error) (92e69f9)
+- [x] Task: Integrate Bloc with `NoteRepository` (92e69f9)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Logic & State Management' (Protocol in workflow.md) (2d2a1a8)
 
 ## Phase 3: UI Implementation
 Goal: Build the responsive screen and components according to the design guidelines.
