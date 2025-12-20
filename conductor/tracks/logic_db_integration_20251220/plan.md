@@ -38,19 +38,19 @@ Goal: Upgrade `sqflite` schema to support Favorites and the Tagging System.
 
 ---
 
-## Phase 3: Firestore Sync Integration
+## Phase 3: Firestore Sync Integration [checkpoint: d230491]
 Goal: Sync Favorite status and Tags with Cloud Firestore.
 
-- [ ] Task: Update `CloudNote` model and serialization
-    - [ ] Write tests for `isFavorite` and `tags` serialization
-    - [ ] Implement fields in `CloudNote` model
-- [ ] Task: Update `FirebaseCloudStorage` logic
-    - [ ] Write tests for pushing/pulling notes with favorites and tags
-    - [ ] Update CRUD operations to include new fields in Firestore documents
-- [ ] Task: Update `SyncService` mapping
-    - [ ] Write tests for end-to-end sync of new fields
-    - [ ] Map `is_favorite` and `tags` list in push/pull logic
-- [ ] Task: Conductor - User Manual Verification 'Firestore Sync Integration' (Protocol in workflow.md)
+- [x] Task: Update `CloudNote` model and serialization d230491
+    - [x] Write tests for `isFavorite` and `tags` serialization
+    - [x] Implement fields in `CloudNote` model
+- [x] Task: Update `FirebaseCloudStorage` logic d230491
+    - [x] Write tests for pushing/pulling notes with favorites and tags
+    - [x] Update CRUD operations to include new fields in Firestore documents
+- [x] Task: Update `SyncService` mapping d230491
+    - [x] Write tests for end-to-end sync of new fields
+    - [x] Map `is_favorite` and `tags` list in push/pull logic
+- [x] Task: Conductor - User Manual Verification 'Firestore Sync Integration' (Protocol in workflow.md) d230491
 
 ---
 
