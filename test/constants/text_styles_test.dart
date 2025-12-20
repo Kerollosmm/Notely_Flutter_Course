@@ -3,8 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_course_2/constants/text_styles.dart';
 import 'package:flutter_course_2/constants/colors_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
   group('TextStyles', () {
     testWidgets('should utilize Spline Sans for headers', (
       WidgetTester tester,
