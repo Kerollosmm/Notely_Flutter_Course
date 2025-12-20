@@ -120,6 +120,8 @@ class NotesService {
     required String contentJson,
     required String? remoteId,
     required DateTime lastModified,
+    bool isFavorite = false,
+    List<String> tags = const [],
     SyncStatus syncStatus = SyncStatus.synced,
   }) async {
     await _ensureDbIsOpen();
@@ -137,6 +139,7 @@ class NotesService {
           syncStatusColumn: syncStatus.index,
           if (remoteId != null) remoteIdColumn: remoteId,
           lastModifiedColumn: lastModified.millisecondsSinceEpoch,
+          isFavoriteColumn: isFavorite ? 1 : 0,
         },
         where: 'id = ?',
         whereArgs: [id],
@@ -149,13 +152,28 @@ class NotesService {
         syncStatusColumn: syncStatus.index,
         remoteIdColumn: remoteId,
         lastModifiedColumn: lastModified.millisecondsSinceEpoch,
+        isFavoriteColumn: isFavorite ? 1 : 0,
       });
     }
 
-    // Refresh cache (optional, or just for this note)
-    // For performance, maybe don't refresh entire list every time if batching.
-    // But consistent with current architecture:
-    await getNote(id: id); // This refreshes the cache for this note
+    // Update tags
+    await db.delete(noteTagsTable, where: 'note_id = ?', whereArgs: [id]);
+    for (final tagName in tags) {
+      // Get or create tag
+      int tagId;
+      final tagResults = await db.query(tagsTable,
+          where: 'name = ?', whereArgs: [tagName.toLowerCase()]);
+      if (tagResults.isEmpty) {
+        tagId = await db.insert(tagsTable, {tagNameColumn: tagName.toLowerCase()});
+      } else {
+        tagId = tagResults.first[idColumn] as int;
+      }
+      // Insert into join table
+      await db.insert(noteTagsTable, {noteIdColumn: id, tagIdColumn: tagId});
+    }
+
+    // Refresh cache
+    await getNote(id: id);
   }
 
   Future<DatabaseNote> updateNote({

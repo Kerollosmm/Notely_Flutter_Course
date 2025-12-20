@@ -10,6 +10,7 @@ class CloudNote {
   final String title;
   final Timestamp lastModified;
   final bool isFavorite;
+  final List<String> tags;
 
   const CloudNote({
     required this.documentId,
@@ -18,16 +19,16 @@ class CloudNote {
     required this.title,
     required this.lastModified,
     required this.isFavorite,
+    required this.tags,
   });
 
   CloudNote.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
     : documentId = snapshot.id,
       ownerUserId = snapshot.data()[ownerFieldUserId],
-      contentJson =
-          snapshot.data()[textFieldName] as String? ??
-          '', // Mapping textFieldName to contentJson for now
+      contentJson = snapshot.data()[textFieldName] as String? ?? '',
       title = snapshot.data()[titleFieldName] as String? ?? '',
       lastModified =
           snapshot.data()['last_modified'] as Timestamp? ?? Timestamp.now(),
-      isFavorite = snapshot.data()[isFavoriteFieldName] as bool? ?? false;
+      isFavorite = snapshot.data()[isFavoriteFieldName] as bool? ?? false,
+      tags = List<String>.from(snapshot.data()[tagsFieldName] as List? ?? []);
 }

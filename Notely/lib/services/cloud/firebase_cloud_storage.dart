@@ -40,6 +40,7 @@ class FirebaseCloudStorage {
     required String contentJson,
     String title = '', // Optional for now
     bool? isFavorite,
+    List<String>? tags,
     required Timestamp lastModified,
   }) async {
     try {
@@ -50,6 +51,9 @@ class FirebaseCloudStorage {
       };
       if (isFavorite != null) {
         updates[isFavoriteFieldName] = isFavorite;
+      }
+      if (tags != null) {
+        updates[tagsFieldName] = tags;
       }
       await notes.doc(documentId).update(updates);
     } catch (e) {
@@ -118,12 +122,16 @@ class FirebaseCloudStorage {
     required String ownerUserId,
     required String contentJson,
     required Timestamp lastModified,
+    bool isFavorite = false,
+    List<String> tags = const [],
   }) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
       textFieldName: contentJson,
       titleFieldName: '',
       'last_modified': lastModified,
+      isFavoriteFieldName: isFavorite,
+      tagsFieldName: tags,
     });
     final fitchNote = await document.get();
     return CloudNote(
@@ -132,7 +140,8 @@ class FirebaseCloudStorage {
       contentJson: contentJson,
       title: '',
       lastModified: lastModified,
-      isFavorite: false,
+      isFavorite: isFavorite,
+      tags: tags,
     );
   }
 }

@@ -66,6 +66,8 @@ class SyncService {
             ownerUserId: userUid,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            isFavorite: note.isFavorite,
+            tags: note.tags,
           );
           // Update local with remote ID and synced status
           await _localDb.updateNoteSyncStatus(
@@ -79,6 +81,8 @@ class SyncService {
             documentId: note.remoteId!,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            isFavorite: note.isFavorite,
+            tags: note.tags,
           );
           await _localDb.updateNoteSyncStatus(
             id: note.id,
@@ -141,6 +145,8 @@ class SyncService {
             contentJson: remoteNote.contentJson,
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
+            isFavorite: remoteNote.isFavorite,
+            tags: remoteNote.tags,
             syncStatus: SyncStatus.synced,
           );
         } else {
@@ -150,6 +156,8 @@ class SyncService {
             contentJson: remoteNote.contentJson,
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
+            isFavorite: remoteNote.isFavorite,
+            tags: remoteNote.tags,
             syncStatus: SyncStatus.synced,
           );
         }
