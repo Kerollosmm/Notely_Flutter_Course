@@ -21,7 +21,7 @@ Goal: Implement the core theme tokens and navigation constants.
 
 ---
 
-## Phase 2: Database Schema & Migration
+## Phase 2: Database Schema & Migration [checkpoint: 94cfdb2]
 Goal: Upgrade `sqflite` schema to support Favorites and the Tagging System.
 
 - [x] Task: Prepare Migration Tests a6697c3
@@ -34,7 +34,7 @@ Goal: Upgrade `sqflite` schema to support Favorites and the Tagging System.
 - [x] Task: Implement Tagging System Tables a6697c3
     - [x] Create `tags` table (id, name)
     - [x] Create `note_tags` table (note_id, tag_id)
-- [~] Task: Conductor - User Manual Verification 'Database Schema & Migration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Database Schema & Migration' (Protocol in workflow.md) 94cfdb2
 
 ---
 
