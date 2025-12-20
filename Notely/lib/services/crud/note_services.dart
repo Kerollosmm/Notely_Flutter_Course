@@ -105,7 +105,13 @@ class NotesService {
       where: '$syncStatusColumn = ?',
       whereArgs: [status.index],
     );
-    return notes.map((n) => DatabaseNote.fromRow(n));
+    final List<DatabaseNote> databaseNotes = [];
+    for (final noteRow in notes) {
+      final id = noteRow[idColumn] as String;
+      final tags = await _getTagsForNote(id);
+      databaseNotes.add(DatabaseNote.fromRow(noteRow, tags: tags));
+    }
+    return databaseNotes;
   }
 
   Future<void> upsertLocalNote({
@@ -209,12 +215,28 @@ class NotesService {
     _notesStreamController.add(_notes);
   }
 
+  Future<List<String>> _getTagsForNote(String noteId) async {
+    final db = _getDatabaseOrThrow();
+    final results = await db.rawQuery('''
+      SELECT t.$tagNameColumn FROM $tagsTable t
+      JOIN $noteTagsTable nt ON t.$idColumn = nt.$tagIdColumn
+      WHERE nt.$noteIdColumn = ?
+    ''', [noteId]);
+    return results.map((row) => row[tagNameColumn] as String).toList();
+  }
+
   Future<Iterable<DatabaseNote>> getAllNotes() async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final notes = await db.query(noteTable);
 
-    return notes.map((noteRow) => DatabaseNote.fromRow(noteRow));
+    final List<DatabaseNote> databaseNotes = [];
+    for (final noteRow in notes) {
+      final id = noteRow[idColumn] as String;
+      final tags = await _getTagsForNote(id);
+      databaseNotes.add(DatabaseNote.fromRow(noteRow, tags: tags));
+    }
+    return databaseNotes;
   }
 
   Future<DatabaseNote> getNote({required String id}) async {
@@ -230,7 +252,8 @@ class NotesService {
     if (notes.isEmpty) {
       throw CouldNotFindNote();
     } else {
-      final note = DatabaseNote.fromRow(notes.first);
+      final tags = await _getTagsForNote(id);
+      final note = DatabaseNote.fromRow(notes.first, tags: tags);
       _notes.removeWhere((note) => note.id == id);
       _notes.add(note);
       _notesStreamController.add(_notes);
@@ -316,6 +339,7 @@ class NotesService {
       remoteId: null,
       lastModified: DateTime.fromMillisecondsSinceEpoch(now),
       isFavorite: false,
+      tags: const [],
     );
 
     _notes.add(note);
@@ -421,22 +445,35 @@ class NotesService {
     try {
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, dbName);
-      final db = await openDatabase(dbPath);
+      final db = await openDatabase(
+        dbPath,
+        version: 2,
+        onCreate: (db, version) async {
+          await db.execute(createUserTable);
+          await db.execute(createNoteTable);
+          await db.execute(createTagsTable);
+          await db.execute(createNoteTagsTable);
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          if (oldVersion < 2) {
+            // is_favorite column was added in a previous un-versioned iteration or in version 2
+            // Since the code already has is_favorite in createNoteTable, 
+            // if upgrading from a version that didn't have it, we'd need to add it.
+            // BUT, looking at createNoteTable, it's already there.
+            // Let's implement the new Tagging system tables for version 2.
+            await db.execute(createTagsTable);
+            await db.execute(createNoteTagsTable);
+            
+            // Check if is_favorite exists, if not add it (defensive)
+            try {
+              await db.execute('ALTER TABLE $noteTable ADD COLUMN $isFavoriteColumn INTEGER NOT NULL DEFAULT 0');
+            } catch (e) {
+              // Column might already exist
+            }
+          }
+        },
+      );
       _db = db;
-
-      // create the user table
-      await db.execute(createUserTable);
-
-      // create note table
-      // We might need to drop table if it exists and schema changed, for this dev phase
-      // await db.execute('DROP TABLE IF EXISTS $noteTable');
-      // For now, I'll rely on the user to uninstall/reinstall or I'll just change the table name or run a migration
-      // Since this is a refactor, I will update the CREATE statement.
-      // IF the table exists with old schema, it might crash.
-      // I'll add a check or just Create if not exists.
-      // Ideally we version the DB.
-
-      await db.execute(createNoteTable);
       await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectory();
@@ -472,6 +509,7 @@ class DatabaseNote {
   final String? remoteId;
   final DateTime lastModified;
   final bool isFavorite;
+  final List<String> tags;
 
   DatabaseNote({
     required this.id,
@@ -481,9 +519,10 @@ class DatabaseNote {
     required this.remoteId,
     required this.lastModified,
     required this.isFavorite,
+    required this.tags,
   });
 
-  DatabaseNote.fromRow(Map<String, Object?> map)
+  DatabaseNote.fromRow(Map<String, Object?> map, {List<String> tags = const []})
     : id = map[idColumn] as String,
       userId = map[userIdColumn] as int,
       contentJson = map[contentJsonColumn] as String,
@@ -492,7 +531,8 @@ class DatabaseNote {
       lastModified = DateTime.fromMillisecondsSinceEpoch(
         map[lastModifiedColumn] as int,
       ),
-      isFavorite = (map[isFavoriteColumn] as int? ?? 0) == 1;
+      isFavorite = (map[isFavoriteColumn] as int? ?? 0) == 1,
+      tags = tags;
 
   @override
   String toString() =>
@@ -508,6 +548,9 @@ class DatabaseNote {
 const dbName = 'notes.db';
 const noteTable = 'note';
 const userTable = 'user';
+const tagsTable = 'tags';
+const noteTagsTable = 'note_tags';
+
 const idColumn = 'id';
 const emailColumn = 'email';
 const userIdColumn = 'user_id';
@@ -516,6 +559,10 @@ const syncStatusColumn = 'sync_status';
 const remoteIdColumn = 'remote_id';
 const lastModifiedColumn = 'last_modified';
 const isFavoriteColumn = 'is_favorite';
+
+const tagNameColumn = 'name';
+const tagIdColumn = 'id';
+const noteIdColumn = 'note_id';
 
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
         "id"	INTEGER NOT NULL,
@@ -533,4 +580,18 @@ const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "last_modified" INTEGER NOT NULL,
         "is_favorite" INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY("user_id") REFERENCES "user"("id")
+      );''';
+
+const createTagsTable = '''CREATE TABLE IF NOT EXISTS "$tagsTable" (
+        "$idColumn" INTEGER NOT NULL,
+        "$tagNameColumn" TEXT NOT NULL UNIQUE,
+        PRIMARY KEY("$idColumn" AUTOINCREMENT)
+      );''';
+
+const createNoteTagsTable = '''CREATE TABLE IF NOT EXISTS "$noteTagsTable" (
+        "$noteIdColumn" TEXT NOT NULL,
+        "$tagIdColumn" INTEGER NOT NULL,
+        PRIMARY KEY("$noteIdColumn", "$tagIdColumn"),
+        FOREIGN KEY("$noteIdColumn") REFERENCES "$noteTable"("$idColumn") ON DELETE CASCADE,
+        FOREIGN KEY("$tagIdColumn") REFERENCES "$tagsTable"("$idColumn") ON DELETE CASCADE
       );''';
