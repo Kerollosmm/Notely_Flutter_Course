@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'dummy',
-    appId: 'dummy',
-    messagingSenderId: 'dummy',
-    projectId: 'dummy',
-    authDomain: 'dummy',
-    storageBucket: 'dummy',
+    apiKey: 'AIzaSyBOBiCZ-to7VVio7CAntqwIRfPIhiZgKZg',
+    appId: '1:1042612043664:web:ae2ba268e28fdfb367fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    authDomain: 'notely-7fcda.firebaseapp.com',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    measurementId: 'G-MENF8EKM0Y',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'dummy',
-    appId: 'dummy',
-    messagingSenderId: 'dummy',
-    projectId: 'dummy',
-    storageBucket: 'dummy',
+    apiKey: 'AIzaSyB6NLZbDbmijSlv12cil2ayxPPTrC31oWg',
+    appId: '1:1042612043664:android:280418f3d2fce5cf67fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'dummy',
-    appId: 'dummy',
-    messagingSenderId: 'dummy',
-    projectId: 'dummy',
-    storageBucket: 'dummy',
-    iosClientId: 'dummy',
-    iosBundleId: 'dummy',
+    apiKey: 'AIzaSyCruzVCUUn-T5K-2J0O1hAfSrQCIpb00Rg',
+    appId: '1:1042612043664:ios:5638b67c4ecc614667fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    iosBundleId: 'com.example.flutterCourse2',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'dummy',
-    appId: 'dummy',
-    messagingSenderId: 'dummy',
-    projectId: 'dummy',
-    storageBucket: 'dummy',
-    iosClientId: 'dummy',
-    iosBundleId: 'dummy',
+    apiKey: 'AIzaSyCruzVCUUn-T5K-2J0O1hAfSrQCIpb00Rg',
+    appId: '1:1042612043664:ios:5638b67c4ecc614667fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    iosBundleId: 'com.example.flutterCourse2',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'dummy',
-    appId: 'dummy',
-    messagingSenderId: 'dummy',
-    projectId: 'dummy',
-    authDomain: 'dummy',
-    storageBucket: 'dummy',
+    apiKey: 'AIzaSyBOBiCZ-to7VVio7CAntqwIRfPIhiZgKZg',
+    appId: '1:1042612043664:web:decfdf96cd8baa0a67fd15',
+    messagingSenderId: '1042612043664',
+    projectId: 'notely-7fcda',
+    authDomain: 'notely-7fcda.firebaseapp.com',
+    storageBucket: 'notely-7fcda.firebasestorage.app',
+    measurementId: 'G-MSVVG6GPWK',
   );
 }
