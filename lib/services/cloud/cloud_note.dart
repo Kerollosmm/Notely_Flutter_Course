@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_course_2/services/cloud/cloud_storage_constants.dart';
+import 'package:flutter_course_2/services/crud/note_services.dart';
 
 @immutable
 class CloudNote {
@@ -11,6 +12,7 @@ class CloudNote {
   final Timestamp lastModified;
   final String category;
   final List<String> tags;
+  final SyncStatus? syncStatus;
 
   const CloudNote({
     required this.documentId,
@@ -20,6 +22,7 @@ class CloudNote {
     required this.lastModified,
     this.category = 'All Notes',
     this.tags = const [],
+    this.syncStatus,
   });
 
   CloudNote.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
@@ -32,5 +35,6 @@ class CloudNote {
       lastModified =
           snapshot.data()['last_modified'] as Timestamp? ?? Timestamp.now(),
       category = snapshot.data()['category'] as String? ?? 'All Notes',
-      tags = List<String>.from(snapshot.data()['tags'] ?? []);
+      tags = List<String>.from(snapshot.data()['tags'] ?? []),
+      syncStatus = SyncStatus.synced; // Default to synced for Cloud
 }

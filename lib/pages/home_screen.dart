@@ -146,11 +146,27 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
       itemCount: notes.length,
       itemBuilder: (context, index) {
         final note = notes[index];
-        return NoteCard(
-          note: note,
-          onTap: () {
-            Navigator.pushNamed(context, createOrUpdateNoteRoute, arguments: note);
+        return Dismissible(
+          key: Key(note.documentId),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: EdgeInsets.only(right: 20.w),
+            color: Colors.red,
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          onDismissed: (direction) {
+            context.read<HomeBloc>().add(HomeDeleteNote(note.documentId));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Note deleted')),
+            );
           },
+          child: NoteCard(
+            note: note,
+            onTap: () {
+              Navigator.pushNamed(context, createOrUpdateNoteRoute, arguments: note);
+            },
+          ),
         );
       },
     );

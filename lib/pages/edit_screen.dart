@@ -116,14 +116,20 @@ class _EditScreenViewState extends State<_EditScreenView> {
                         'Last edited: ${_formatDate(state.lastEdited)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                       ),
-                      TextField(
-                        controller: _titleController,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                        decoration: const InputDecoration(
-                          hintText: 'Title',
-                          border: InputBorder.none,
+                      Hero(
+                        tag: 'note_title_${state.originalNote?.documentId ?? 'new'}',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: TextField(
+                            controller: _titleController,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                            decoration: const InputDecoration(
+                              hintText: 'Title',
+                              border: InputBorder.none,
+                            ),
+                            onChanged: (val) => context.read<bloc.EditorBloc>().add(bloc.EditorTitleChanged(val)),
+                          ),
                         ),
-                        onChanged: (val) => context.read<bloc.EditorBloc>().add(bloc.EditorTitleChanged(val)),
                       ),
                       _buildTags(state.tags, context),
                     ],
@@ -140,7 +146,12 @@ class _EditScreenViewState extends State<_EditScreenView> {
                   ),
                 ),
 
-                if (_isToolbarVisible) _buildCustomToolbar(),
+                // Toolbar attached to keyboard or bottom
+                if (_isToolbarVisible)
+                  Padding(
+                    padding: MediaQuery.of(context).viewInsets, // Adjust for keyboard
+                    child: _buildCustomToolbar(),
+                  ),
               ],
             ),
           );
