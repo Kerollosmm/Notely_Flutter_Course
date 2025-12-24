@@ -51,8 +51,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
     // send email verification
     on<AuthEventSendEmailVerification>((event, emit) async {
-      await provider.sendEmailVerification();
-      emit(state);
+      try {
+        await provider.sendEmailVerification();
+        emit(const AuthStateNeedsVerification(isLoading: false));
+      } on Exception catch (e) {
+        emit(AuthStateNeedsVerification(
+          isLoading: false,
+          exception: e,
+        ));
+      }
     });
     on<AuthEventRegister>((event, emit) async {
       final email = event.email;
