@@ -20,11 +20,11 @@ class NoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     String plainText;
     try {
-      final delta = jsonDecode(note.text);
+      final delta = jsonDecode(note.contentJson);
       final doc = Document.fromJson(delta);
       plainText = doc.toPlainText();
     } catch (e) {
-      plainText = note.text;
+      plainText = note.contentJson;
     }
 
     return GestureDetector(

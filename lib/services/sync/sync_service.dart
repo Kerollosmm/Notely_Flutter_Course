@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
 import 'package:flutter_course_2/services/cloud/cloud_note.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
 
 class SyncService {
@@ -162,7 +163,7 @@ class SyncService {
           // No, local `id` is UUID, remote `id` is Firestore ID.
 
           await _localDb.upsertLocalNote(
-            id: const Uuid().v4(), // Generate new local ID
+            id: Uuid().v4(), // Generate new local ID
             userId: localUserId,
             contentJson: remoteNote.contentJson,
             remoteId: remoteNote.documentId,
