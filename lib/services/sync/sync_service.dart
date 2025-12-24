@@ -4,9 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_course_2/services/crud/note_services.dart';
 import 'package:flutter_course_2/services/cloud/firebase_cloud_storage.dart';
-import 'package:flutter_course_2/services/cloud/cloud_note.dart';
-import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
+import 'package:uuid/uuid.dart';
 
 class SyncService {
   final NotesService _localDb;
@@ -40,7 +39,7 @@ class SyncService {
     // 2. Push Dirty Notes
     final dirtyNotes = await _localDb.getNotesWithStatus(SyncStatus.dirty);
     for (final note in dirtyNotes) {
-      if (note.userId != localUserId) continue; // Safety check
+      if (note.userId != localUserId) continue;
 
       try {
         if (note.remoteId == null) {
@@ -49,6 +48,8 @@ class SyncService {
             ownerUserId: userUid,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            category: note.category,
+            tags: note.tags,
           );
           // Update local with remote ID and synced status
           await _localDb.updateNoteSyncStatus(
@@ -62,6 +63,9 @@ class SyncService {
             documentId: note.remoteId!,
             contentJson: note.contentJson,
             lastModified: Timestamp.fromDate(note.lastModified),
+            title: '', // Title not in local DB yet, using empty
+            category: note.category,
+            tags: note.tags,
           );
           await _localDb.updateNoteSyncStatus(
             id: note.id,
@@ -85,7 +89,6 @@ class SyncService {
         if (note.remoteId != null) {
           await _remoteDb.deleteNotes(documentId: note.remoteId!);
         }
-        // Hard delete locally
         await _localDb.purgeNote(id: note.id);
       } catch (e) {
         dev.log('Failed to delete note ${note.id}: $e');
@@ -97,44 +100,31 @@ class SyncService {
     final lastSyncedMillis = prefs.getInt('$_lastSyncedKey$userUid') ?? 0;
     final lastSynced = Timestamp.fromMillisecondsSinceEpoch(lastSyncedMillis);
 
-    // Fetch remote notes modified after last sync
-    // If it's first sync (0), this gets ALL notes.
     try {
       final remoteNotes = await _remoteDb.getNotesModifiedAfter(
         ownerUserId: userUid,
         lastSynced: lastSynced,
       );
 
-      for (final remoteNote in remoteNotes) {
-        // Find if we have this note locally by remoteId
-        // I need a method `getNoteByRemoteId` in NotesService?
-        // Or I can just iterate.
-        // Efficient way: NotesService needs `getNoteByRemoteId`.
-        // I'll implement it or just use `getAllNotes` (not efficient).
-        // Let's add `getNoteByRemoteId` to NotesService.
+      // Optimization: Fetch all local notes once
+      final allLocalNotes = await _localDb.getAllNotes();
+      // Create map for O(1) lookup: RemoteID -> DatabaseNote
+      // Only include notes that have a remoteId
+      final localNoteMap = {
+        for (var n in allLocalNotes)
+          if (n.remoteId != null) n.remoteId!: n
+      };
 
-        // Wait, I can't easily modify NotesService again and again.
-        // I'll use `getNotesWithStatus` which I already added? No.
-        // I'll use `getAllNotes` and filter in memory for now (MVP).
-        final allLocalNotes = await _localDb.getAllNotes();
-        DatabaseNote? localNote;
-        try {
-          localNote = allLocalNotes.firstWhere(
-            (n) => n.remoteId == remoteNote.documentId,
-          );
-        } catch (_) {}
+      for (final remoteNote in remoteNotes) {
+        final localNote = localNoteMap[remoteNote.documentId];
 
         if (localNote != null) {
-          // Conflict resolution: Remote wins if newer (which it is, by query definition sort of)
-          // Actually, if local is DIRTY, we have a conflict.
+          // Conflict Resolution: Local Dirty wins (Preserve user edits)
           if (localNote.syncStatus == SyncStatus.dirty) {
-            // Conflict!
-            // Strategy: Keep Local (user just edited), ignore Remote update for now?
-            // Or Duplicate?
-            // Simple: Local wins. Do nothing. Next push will overwrite remote.
-            continue;
+             continue;
           }
 
+          // Apply remote update
           await _localDb.upsertLocalNote(
             id: localNote.id,
             userId: localUserId,
@@ -142,38 +132,24 @@ class SyncService {
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
             syncStatus: SyncStatus.synced,
+            category: remoteNote.category,
+            tags: remoteNote.tags,
           );
         } else {
           // New note from remote
-          // We need to generate a local ID for it?
-          // We can use UUID.
-          // Note: `upsertLocalNote` takes an ID.
-          // If I don't have a local ID, I generate one.
-          // Check if I already have a note with the SAME ID?
-          // Remote ID is not Local ID.
-          // So I generate new UUID.
-          // WAIT. If I uninstall and reinstall, I pull notes.
-          // They will have remote IDs but no local IDs.
-          // I generate new local IDs for them.
-
-          // But what if I have a local note that hasn't synced yet,
-          // and I pull a note that IS that note (somehow)? Unlikely with UUIDs.
-
-          // One Edge Case: If I use `remoteId` as `id`?
-          // No, local `id` is UUID, remote `id` is Firestore ID.
-
           await _localDb.upsertLocalNote(
-            id: Uuid().v4(), // Generate new local ID
+            id: Uuid().v4(), // Generate new local UUID
             userId: localUserId,
             contentJson: remoteNote.contentJson,
             remoteId: remoteNote.documentId,
             lastModified: remoteNote.lastModified.toDate(),
             syncStatus: SyncStatus.synced,
+            category: remoteNote.category,
+            tags: remoteNote.tags,
           );
         }
       }
 
-      // Update last synced time
       await prefs.setInt(
         '$_lastSyncedKey$userUid',
         DateTime.now().millisecondsSinceEpoch,

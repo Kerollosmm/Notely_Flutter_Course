@@ -29,12 +29,16 @@ class FirebaseCloudStorage {
     required String contentJson,
     String title = '', // Optional for now
     required Timestamp lastModified,
+    String category = 'All Notes',
+    List<String> tags = const [],
   }) async {
     try {
       await notes.doc(documentId).update({
         textFieldName: contentJson,
         titleFieldName: title,
         'last_modified': lastModified,
+        'category': category,
+        'tags': tags,
       });
     } catch (e) {
       throw CouldNotUpdateNoteException();
@@ -77,12 +81,16 @@ class FirebaseCloudStorage {
     required String ownerUserId,
     required String contentJson,
     required Timestamp lastModified,
+    String category = 'All Notes',
+    List<String> tags = const [],
   }) async {
     final document = await notes.add({
       ownerFieldUserId: ownerUserId,
       textFieldName: contentJson,
       titleFieldName: '',
       'last_modified': lastModified,
+      'category': category,
+      'tags': tags,
     });
     final fitchNote = await document.get();
     return CloudNote(
@@ -91,6 +99,8 @@ class FirebaseCloudStorage {
       contentJson: contentJson,
       title: '',
       lastModified: lastModified,
+      category: category,
+      tags: tags,
     );
   }
 

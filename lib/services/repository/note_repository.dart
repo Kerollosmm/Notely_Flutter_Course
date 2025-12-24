@@ -18,18 +18,33 @@ class NoteRepository {
     await _localDb.open();
   }
 
+  Future<void> close() async {
+    await _localDb.close();
+  }
+
   Future<DatabaseUser> getOrCreateUser({required String email}) =>
       _localDb.getOrCreateUser(email: email);
 
-  Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
-    return await _localDb.createNote(owner: owner);
+  Future<DatabaseNote> createNote({
+    required DatabaseUser owner,
+    String category = 'Personal',
+    List<String> tags = const [],
+  }) async {
+    return await _localDb.createNote(owner: owner, category: category, tags: tags);
   }
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
-    required String contentJson,
+    String? contentJson,
+    String? category,
+    List<String>? tags,
   }) async {
-    return await _localDb.updateNote(note: note, contentJson: contentJson);
+    return await _localDb.updateNote(
+      note: note,
+      contentJson: contentJson,
+      category: category,
+      tags: tags,
+    );
   }
 
   Future<void> deleteNote({required String id}) async {

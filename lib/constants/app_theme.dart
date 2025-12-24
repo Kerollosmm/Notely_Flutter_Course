@@ -1,149 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'app_colors.dart';
 
 class AppTheme {
-  // Light Theme Colors
-  static const Color backgroundLight = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFF5F5F5); // For cards, text fields
-  static const Color primaryLight = Color(0xFF007AFF); // A nice blue
-  static const Color onBackgroundLight = Color(0xFF000000);
-  static const Color onSurfaceLight = Color(0xFF000000);
-  static const Color secondaryTextLight = Color(
-    0xFF8A8A8E,
-  ); // For subtitles, hints
+  static ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.backgroundLight,
+    primaryColor: AppColors.primary,
 
-  // Dark Theme Colors
-  static const Color backgroundDark = Color(0xFF1C1C1E);
-  static const Color surfaceDark = Color(0xFF2C2C2E); // For cards, text fields
-  static const Color primaryDark = Color(
-    0xFF0A84FF,
-  ); // A slightly brighter blue for dark mode
-  static const Color onBackgroundDark = Color(0xFFFFFFFF);
-  static const Color onSurfaceDark = Color(0xFFFFFFFF);
-  static const Color secondaryTextDark = Color(
-    0xFF8D8D93,
-  ); // For subtitles, hints
+    colorScheme: ColorScheme.light(
+      primary: AppColors.primary,
+      secondary: AppColors.primaryDark,
+      surface: AppColors.cardLight,
+      error: AppColors.error,
+      onPrimary: Colors.black,
+      onSecondary: Colors.black,
+      onSurface: AppColors.textPrimaryLight,
+    ),
 
-  // Typography
-  static final TextTheme _textTheme = TextTheme(
-    headlineMedium: GoogleFonts.lato(
-      fontSize: 22.sp,
-      fontWeight: FontWeight.bold,
-    ), // AppBar titles
-    titleLarge: GoogleFonts.lato(
-      fontSize: 18.sp,
-      fontWeight: FontWeight.bold,
-    ), // Note titles
-    titleMedium: GoogleFonts.lato(fontSize: 16.sp), // Note subtitles/body
-    bodyMedium: GoogleFonts.lato(fontSize: 16.sp),
-    labelLarge: GoogleFonts.lato(
-      fontSize: 16.sp,
-      fontWeight: FontWeight.w700,
-    ), // Buttons
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColors.backgroundLight,
+      elevation: 0,
+      centerTitle: false,
+      iconTheme: const IconThemeData(color: AppColors.textPrimaryLight),
+      titleTextStyle: GoogleFonts.inter(
+        color: AppColors.textPrimaryLight,
+        fontSize: 20.sp,
+        fontWeight: FontWeight.w700,
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+    ),
+
+    cardTheme: CardThemeData(
+      color: AppColors.cardLight,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r),
+        side: const BorderSide(color: Color(0xFFF0F0F0)),
+      ),
+      margin: EdgeInsets.zero,
+    ),
+
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.black,
+      elevation: 4,
+      shape: const CircleBorder(),
+    ),
+
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+    ),
   );
 
-  static ThemeData get lightTheme {
-    return ThemeData(
-      brightness: Brightness.light,
-      primaryColor: primaryLight,
-      scaffoldBackgroundColor: backgroundLight,
-      colorScheme: const ColorScheme.light(
-        primary: primaryLight,
-        secondary: primaryLight,
-        surface: surfaceLight,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: onSurfaceLight,
-        surfaceContainerHighest: surfaceLight, // Used for TextField fill
-        outline: Colors.grey,
-      ),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        backgroundColor: backgroundLight,
-        titleTextStyle: _textTheme.headlineMedium?.copyWith(
-          color: onBackgroundLight,
-        ),
-        iconTheme: const IconThemeData(color: onBackgroundLight),
-      ),
-      textTheme: _textTheme.apply(
-        bodyColor: onBackgroundLight,
-        displayColor: onBackgroundLight,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceLight,
-        hintStyle: TextStyle(color: secondaryTextLight),
-        labelStyle: const TextStyle(
-          color: onBackgroundLight,
-          fontWeight: FontWeight.bold,
-        ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0.r),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0.r),
-          borderSide: const BorderSide(color: primaryLight, width: 1.5),
-        ),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryLight,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
+  static ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: AppColors.backgroundDark,
+    primaryColor: AppColors.primary,
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      brightness: Brightness.dark,
-      primaryColor: primaryDark,
-      scaffoldBackgroundColor: backgroundDark,
-      colorScheme: const ColorScheme.dark(
-        primary: primaryDark,
-        secondary: primaryDark,
-        surface: surfaceDark,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: onSurfaceDark,
-        surfaceContainerHighest: surfaceDark, // Used for TextField fill
-        outline: Colors.grey,
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.primary,
+      secondary: AppColors.primaryDark,
+      surface: AppColors.cardDark,
+      error: AppColors.error,
+      onPrimary: Colors.black,
+      onSecondary: Colors.black,
+      onSurface: AppColors.textPrimaryDark,
+    ),
+
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColors.backgroundDark,
+      elevation: 0,
+      centerTitle: false,
+      iconTheme: const IconThemeData(color: AppColors.textPrimaryDark),
+      titleTextStyle: GoogleFonts.inter(
+        color: AppColors.textPrimaryDark,
+        fontSize: 20.sp,
+        fontWeight: FontWeight.w700,
       ),
-      appBarTheme: AppBarTheme(
-        elevation: 0,
-        backgroundColor: backgroundDark,
-        titleTextStyle: _textTheme.headlineMedium?.copyWith(
-          color: onBackgroundDark,
-        ),
-        iconTheme: const IconThemeData(color: onBackgroundDark),
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+    ),
+
+    cardTheme: CardThemeData(
+      color: AppColors.cardDark,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r),
       ),
-      textTheme: _textTheme.apply(
-        bodyColor: onBackgroundDark,
-        displayColor: onBackgroundDark,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceDark,
-        hintStyle: TextStyle(color: secondaryTextDark),
-        labelStyle: const TextStyle(
-          color: onBackgroundDark,
-          fontWeight: FontWeight.bold,
-        ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0.r),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0.r),
-          borderSide: const BorderSide(color: primaryDark, width: 1.5),
-        ),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryDark,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
+      margin: EdgeInsets.zero,
+    ),
+
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.black,
+      elevation: 4,
+      shape: const CircleBorder(),
+    ),
+  );
 }
